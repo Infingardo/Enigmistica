@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anagrammi Italiano</title>
+    <title>Anagrammi e Ricerca Parole</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -26,6 +26,32 @@
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
+        
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #3498db;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover { background: #ebf5fb; }
+        .tab.active { background: #3498db; color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
         .status-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .status { font-size: 0.9em; }
@@ -170,6 +196,21 @@
         .length-label { font-size: 0.8em; color: #7f8c8d; margin-bottom: 4px; }
         .hint { font-size: 0.8em; color: #95a5a6; text-align: center; margin-top: 10px; }
         
+        .hint-box {
+            background: #fef9e7;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.85em;
+        }
+        
+        .hint-box code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
         .dict-selector { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         
         .dict-btn {
@@ -199,12 +240,13 @@
             .btn-group { flex-direction: column; }
             button { width: 100%; }
             .modal-buttons { flex-direction: column; }
+            .tab { padding: 10px 8px; font-size: 0.85em; }
         }
     </style>
 </head>
 <body>
-    <h1>🔤 Anagrammi</h1>
-    <p class="subtitle">Trova tutti gli anagrammi di una parola italiana</p>
+    <h1>🔤 Enigmistica</h1>
+    <p class="subtitle">Anagrammi e ricerca parole italiane</p>
     
     <div class="card">
         <div class="status-bar">
@@ -250,17 +292,63 @@
     </div>
     
     <div class="card" id="searchCard">
-        <input type="text" id="inputWord" placeholder="Scrivi una parola..." onkeyup="handleKeyUp(event)" disabled>
-        
-        <div class="options">
-            <div class="option"><input type="checkbox" id="chkMulti" checked><label for="chkMulti">Multi-parola</label></div>
-            <div class="option"><input type="checkbox" id="chkPartial" checked><label for="chkPartial">Parole incluse</label></div>
-            <div class="option"><label for="selMaxWords">Max:</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
-            <div class="option"><label for="selMinLen">Min:</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('anagrammi')">🔄 Anagrammi</button>
+            <button class="tab" onclick="switchTab('ricerca')">🔍 Cerca parole</button>
         </div>
         
-        <button class="btn-primary" onclick="findAnagrams()" id="btnSearch" disabled style="width: 100%;">🔍 Cerca anagrammi</button>
-        <p class="hint">💡 Tieni premuto su una parola per rimuoverla</p>
+        <!-- Tab Anagrammi -->
+        <div class="tab-content active" id="tab-anagrammi">
+            <input type="text" id="inputWord" placeholder="Scrivi una parola..." onkeyup="handleKeyUp(event, 'anagrammi')" disabled>
+            
+            <div class="options">
+                <div class="option"><input type="checkbox" id="chkMulti" checked><label for="chkMulti">Multi-parola</label></div>
+                <div class="option"><input type="checkbox" id="chkPartial" checked><label for="chkPartial">Parole incluse</label></div>
+                <div class="option"><label for="selMaxWords">Max:</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
+                <div class="option"><label for="selMinLen">Min:</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+            </div>
+            
+            <button class="btn-primary" onclick="findAnagrams()" id="btnSearch" disabled style="width: 100%;">🔍 Cerca anagrammi</button>
+            <p class="hint">💡 Tieni premuto su una parola per rimuoverla</p>
+        </div>
+        
+        <!-- Tab Ricerca -->
+        <div class="tab-content" id="tab-ricerca">
+            <div class="hint-box">
+                <strong>Pattern:</strong> 
+                <code>.</code> o <code>?</code> = una lettera &nbsp;
+                <code>+</code> = vocale &nbsp;
+                <code>-</code> = consonante &nbsp;
+                <code>*</code> = più lettere
+            </div>
+            
+            <input type="text" id="inputPattern" placeholder="Es: cas+, *zione, p-+ma..." onkeyup="handleKeyUp(event, 'ricerca')" disabled>
+            
+            <div class="options">
+                <div class="option">
+                    <label for="selMinLenSearch">Lunghezza min:</label>
+                    <select id="selMinLenSearch">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div class="option">
+                    <label for="selMaxLenSearch">max:</label>
+                    <select id="selMaxLenSearch">
+                        <option value="10">10</option>
+                        <option value="15" selected>15</option>
+                        <option value="20">20</option>
+                        <option value="99">∞</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="searchPattern()" id="btnPattern" disabled style="width: 100%;">🔍 Cerca parole</button>
+            <p class="hint">Es: <code>cas+</code> → casa, case, caso | <code>*mente</code> → parole che finiscono in "mente"</p>
+        </div>
     </div>
     
     <div class="card hidden" id="resultsCard">
@@ -269,7 +357,8 @@
     </div>
     
     <div class="context-menu hidden" id="contextMenu">
-        <div class="context-menu-item" onclick="searchSelectedWord()">🔍 Cerca anagrammi</div>
+        <div class="context-menu-item" onclick="searchSelectedWord()">🔄 Anagrammi</div>
+        <div class="context-menu-item" onclick="patternSelectedWord()">🔍 Cerca pattern</div>
         <div class="context-menu-item danger" onclick="removeSelectedWord()">🗑️ Rimuovi</div>
     </div>
     
@@ -298,15 +387,23 @@
     </div>
 
     <script>
-        const DICT_FILES = { ridotto: './dizionario_ridotto.txt', completo: './dizionario_completo.txt' };
+        const DICT_BASE = 'https://infingardo.github.io/Enigmistica/';
+        const DICT_FILES = { 
+            ridotto: DICT_BASE + 'dizionario_ridotto.txt', 
+            completo: DICT_BASE + 'dizionario_completo.txt' 
+        };
         const CONTACT_EMAIL = 'critto@gmail.com';
         const CONTACT_NAME = 'kc8';
         const DB_NAME = 'AnagrammiBEI';
         const DB_VERSION = 1;
         const STORE_NAME = 'data';
         
-        let db = null, dictIndex = null, wordSet = null, customWords = null, removedWords = null;
+        const VOWELS = 'aeiouàèéìòù';
+        const CONSONANTS = 'bcdfghjklmnpqrstvwxyz';
+        
+        let db = null, dictIndex = null, wordSet = null, wordList = null, customWords = null, removedWords = null;
         let dictSize = 0, currentDict = null, selectedWord = null, longPressTimer = null;
+        let currentTab = 'anagrammi';
         
         document.addEventListener('DOMContentLoaded', init);
         document.addEventListener('click', hideContextMenu);
@@ -317,6 +414,15 @@
                 const saved = await dbGet('currentDict');
                 if (saved) await loadDict(saved, true);
             } catch (err) { console.error('Init:', err); }
+        }
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${tab === 'anagrammi' ? 1 : 2})`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById('resultsCard').classList.add('hidden');
         }
         
         function openDB() {
@@ -362,6 +468,7 @@
             if (cached && fromCache) {
                 dictIndex = new Map(cached.index);
                 wordSet = new Set(cached.words);
+                wordList = cached.words;
                 dictSize = cached.size;
                 finishLoad();
             } else {
@@ -388,7 +495,9 @@
                 for (const w of customWords) addWordToIndex(w);
                 for (const w of removedWords) removeWordFromIndex(w);
                 
-                await dbPut(`dict_${type}`, { index: Array.from(dictIndex.entries()), words: Array.from(wordSet), size: dictSize });
+                wordList = Array.from(wordSet);
+                
+                await dbPut(`dict_${type}`, { index: Array.from(dictIndex.entries()), words: wordList, size: dictSize });
                 await dbPut('currentDict', type);
                 
                 loader.classList.add('hidden');
@@ -420,7 +529,9 @@
             document.getElementById('dictSelector').classList.add('hidden');
             document.getElementById('dictOptions').classList.remove('hidden');
             document.getElementById('inputWord').disabled = false;
+            document.getElementById('inputPattern').disabled = false;
             document.getElementById('btnSearch').disabled = false;
+            document.getElementById('btnPattern').disabled = false;
             document.getElementById('btnAddWord').disabled = false;
             document.getElementById('inputWord').focus();
             
@@ -434,7 +545,9 @@
             document.getElementById('dictOptions').classList.add('hidden');
             document.getElementById('resultsCard').classList.add('hidden');
             document.getElementById('inputWord').disabled = true;
+            document.getElementById('inputPattern').disabled = true;
             document.getElementById('btnSearch').disabled = true;
+            document.getElementById('btnPattern').disabled = true;
             updateStatus('', '⏳ Seleziona un vocabolario...');
         }
         
@@ -468,11 +581,96 @@
         }
         
         async function saveCustomData() {
+            wordList = Array.from(wordSet);
             await dbPut(`custom_${currentDict}`, Array.from(customWords));
             await dbPut(`removed_${currentDict}`, Array.from(removedWords));
-            await dbPut(`dict_${currentDict}`, { index: Array.from(dictIndex.entries()), words: Array.from(wordSet), size: dictSize });
+            await dbPut(`dict_${currentDict}`, { index: Array.from(dictIndex.entries()), words: wordList, size: dictSize });
         }
         
+        // Pattern search
+        function patternToRegex(pattern) {
+            let regex = '^';
+            for (const char of pattern.toLowerCase()) {
+                if (char === '.' || char === '?') {
+                    regex += '[a-zàèéìòùâêîôûäëïöüç]';
+                } else if (char === '+') {
+                    regex += `[${VOWELS}]`;
+                } else if (char === '-') {
+                    regex += `[${CONSONANTS}]`;
+                } else if (char === '*') {
+                    regex += '[a-zàèéìòùâêîôûäëïöüç]*';
+                } else if (/[a-zàèéìòùâêîôûäëïöüç]/.test(char)) {
+                    regex += char;
+                }
+            }
+            regex += '$';
+            return new RegExp(regex, 'i');
+        }
+        
+        function searchPattern() {
+            const pattern = document.getElementById('inputPattern').value.trim();
+            if (!pattern) return;
+            
+            const minLen = parseInt(document.getElementById('selMinLenSearch').value);
+            const maxLen = parseInt(document.getElementById('selMaxLenSearch').value);
+            
+            let regex;
+            try {
+                regex = patternToRegex(pattern);
+            } catch (e) {
+                alert('Pattern non valido');
+                return;
+            }
+            
+            const results = [];
+            for (const word of wordList) {
+                if (word.length < minLen || word.length > maxLen) continue;
+                if (regex.test(word)) {
+                    results.push(word);
+                    if (results.length >= 1000) break;
+                }
+            }
+            
+            results.sort((a, b) => a.length - b.length || a.localeCompare(b));
+            displayPatternResults(pattern, results);
+        }
+        
+        function displayPatternResults(pattern, results) {
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            
+            document.getElementById('resultsCount').textContent = `${results.length}${results.length >= 1000 ? '+' : ''} risultat${results.length === 1 ? 'o' : 'i'} per "${pattern}"`;
+            
+            if (results.length === 0) {
+                container.innerHTML = '<div class="no-results">Nessuna parola trovata 😕</div>';
+                card.classList.remove('hidden');
+                return;
+            }
+            
+            // Raggruppa per lunghezza
+            const byLen = {};
+            for (const w of results) {
+                const len = w.length;
+                if (!byLen[len]) byLen[len] = [];
+                byLen[len].push(w);
+            }
+            
+            const lengths = Object.keys(byLen).map(Number).sort((a, b) => a - b);
+            
+            let html = `<div class="results-section">
+                ${lengths.map(len => `
+                    <div class="length-group">
+                        <div class="length-label">${len} lettere (${byLen[len].length})</div>
+                        <div class="results-grid">${byLen[len].map(w => wordSpan(w)).join('')}</div>
+                    </div>
+                `).join('')}
+            </div>`;
+            
+            container.innerHTML = html;
+            card.classList.remove('hidden');
+        }
+        
+        // Word management
         function showAddWordModal() {
             document.getElementById('addWordModal').classList.remove('hidden');
             document.getElementById('newWordInput').value = '';
@@ -509,7 +707,10 @@
             updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
             updateCustomWordsCount();
             showSuccess(`"${word}" rimossa`);
-            if (!document.getElementById('resultsCard').classList.contains('hidden')) findAnagrams();
+            if (!document.getElementById('resultsCard').classList.contains('hidden')) {
+                if (currentTab === 'anagrammi') findAnagrams();
+                else searchPattern();
+            }
         }
         
         async function restoreRemoved() {
@@ -531,6 +732,7 @@
             el.textContent = parts.length > 0 ? `📝 ${parts.join(', ')}` : '';
         }
         
+        // Context menu
         function showContextMenu(e, word) {
             e.preventDefault();
             selectedWord = word;
@@ -541,11 +743,29 @@
         }
         
         function hideContextMenu() { document.getElementById('contextMenu').classList.add('hidden'); selectedWord = null; }
-        function searchSelectedWord() { if (selectedWord) { document.getElementById('inputWord').value = selectedWord; findAnagrams(); } hideContextMenu(); }
+        
+        function searchSelectedWord() { 
+            if (selectedWord) { 
+                switchTab('anagrammi');
+                document.getElementById('inputWord').value = selectedWord; 
+                findAnagrams(); 
+            } 
+            hideContextMenu(); 
+        }
+        
+        function patternSelectedWord() {
+            if (selectedWord) {
+                switchTab('ricerca');
+                document.getElementById('inputPattern').value = selectedWord;
+            }
+            hideContextMenu();
+        }
+        
         function removeSelectedWord() { if (selectedWord) removeWord(selectedWord); hideContextMenu(); }
         function handleWordTouchStart(e, word) { longPressTimer = setTimeout(() => showContextMenu(e, word), 500); }
         function handleWordTouchEnd() { clearTimeout(longPressTimer); }
         
+        // Export & Suggest
         function exportDictionary() {
             const words = Array.from(wordSet).sort();
             const blob = new Blob([words.join('\n')], { type: 'text/plain' });
@@ -573,6 +793,7 @@
         
         function closeModalOnOverlay(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden'); }
         
+        // Anagrams
         function getSignature(word) { return word.toLowerCase().replace(/['-]/g, '').split('').sort().join(''); }
         
         function findAnagrams() {
@@ -591,7 +812,7 @@
             let multi = multiWord && clean.length <= 15 ? findMultiWordAnagrams(clean, maxWords, minLen) : [];
             let partial = showPartial ? findPartialAnagrams(clean, minLen) : [];
             
-            displayResults(clean, single, multi, partial);
+            displayAnagramResults(clean, single, multi, partial);
         }
         
         function findPartialAnagrams(input, minLen) {
@@ -662,7 +883,7 @@
             return result;
         }
         
-        function displayResults(input, single, multi, partial) {
+        function displayAnagramResults(input, single, multi, partial) {
             const container = document.getElementById('resultsContainer');
             const card = document.getElementById('resultsCard');
             const total = single.length + multi.length + partial.length;
@@ -700,7 +921,12 @@
             return `<span class="${cls}" onclick="searchWord('${esc}')" oncontextmenu="showContextMenu(event, '${esc}')" ontouchstart="handleWordTouchStart(event, '${esc}')" ontouchend="handleWordTouchEnd()" ontouchmove="handleWordTouchEnd()">${esc}</span>`;
         }
         
-        function searchWord(word) { document.getElementById('inputWord').value = word; findAnagrams(); }
+        function searchWord(word) { 
+            switchTab('anagrammi');
+            document.getElementById('inputWord').value = word; 
+            findAnagrams(); 
+        }
+        
         function escapeHtml(str) { return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
         
         function updateStatus(type, text) { document.getElementById('dictStatus').className = 'status ' + type; document.getElementById('statusText').textContent = text; }
@@ -709,7 +935,7 @@
         
         function showError(msg) { const el = document.getElementById('infoMessage'); el.textContent = msg; el.className = 'info-message error'; el.classList.remove('hidden'); }
         function showSuccess(msg) { const el = document.getElementById('infoMessage'); el.textContent = msg; el.className = 'info-message success'; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 2500); }
-        function handleKeyUp(e) { if (e.key === 'Enter') findAnagrams(); }
+        function handleKeyUp(e, tab) { if (e.key === 'Enter') { if (tab === 'anagrammi') findAnagrams(); else searchPattern(); } }
         function formatNumber(n) { return n.toLocaleString('it-IT'); }
     </script>
 </body>
