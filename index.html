@@ -135,6 +135,7 @@
         .result-custom:hover { background: #1abc9c; }
         
         .no-results { text-align: center; color: #7f8c8d; padding: 30px; }
+        .no-results-small { color: #95a5a6; font-style: italic; padding: 8px 0; }
         .loading-box { text-align: center; padding: 20px; }
         
         .spinner {
@@ -890,24 +891,40 @@
             
             document.getElementById('resultsCount').textContent = `${total} risultat${total === 1 ? 'o' : 'i'} per "${input}"`;
             
-            if (total === 0) { container.innerHTML = '<div class="no-results">Nessun anagramma trovato 😕</div>'; card.classList.remove('hidden'); return; }
-            
             let html = '';
             
+            // Anagrammi perfetti - sempre visibile
+            html += `<div class="results-section"><h4>🎯 Anagrammi perfetti (${single.length})</h4>`;
             if (single.length > 0) {
-                html += `<div class="results-section"><h4>🎯 Anagrammi perfetti (${single.length})</h4><div class="results-grid">${single.map(w => wordSpan(w)).join('')}</div></div>`;
+                html += `<div class="results-grid">${single.map(w => wordSpan(w)).join('')}</div>`;
+            } else {
+                html += `<div class="no-results-small">Nessuno</div>`;
+            }
+            html += `</div>`;
+            
+            // Multi-parola - sempre visibile se opzione attiva
+            if (document.getElementById('chkMulti').checked) {
+                html += `<div class="results-section"><h4>🔗 Multi-parola (${multi.length})</h4>`;
+                if (multi.length > 0) {
+                    html += `<div class="results-grid">${multi.map(arr => `<span class="result-word result-multi">${arr.map(escapeHtml).join(' + ')}</span>`).join('')}</div>`;
+                } else {
+                    html += `<div class="no-results-small">Nessuno</div>`;
+                }
+                html += `</div>`;
             }
             
-            if (multi.length > 0) {
-                html += `<div class="results-section"><h4>🔗 Multi-parola (${multi.length})</h4><div class="results-grid">${multi.map(arr => `<span class="result-word result-multi">${arr.map(escapeHtml).join(' + ')}</span>`).join('')}</div></div>`;
-            }
-            
-            if (partial.length > 0) {
-                const byLen = {};
-                for (const w of partial) { const len = w.replace(/['-]/g, '').length; if (!byLen[len]) byLen[len] = []; byLen[len].push(w); }
-                const lengths = Object.keys(byLen).map(Number).sort((a, b) => b - a);
-                
-                html += `<div class="results-section"><h4>📦 Parole incluse (${partial.length})</h4>${lengths.map(len => `<div class="length-group"><div class="length-label">${len} lettere (${byLen[len].length})</div><div class="results-grid">${byLen[len].map(w => wordSpan(w, 'result-partial')).join('')}</div></div>`).join('')}</div>`;
+            // Parole incluse - sempre visibile se opzione attiva
+            if (document.getElementById('chkPartial').checked) {
+                html += `<div class="results-section"><h4>📦 Parole incluse (${partial.length})</h4>`;
+                if (partial.length > 0) {
+                    const byLen = {};
+                    for (const w of partial) { const len = w.replace(/['-]/g, '').length; if (!byLen[len]) byLen[len] = []; byLen[len].push(w); }
+                    const lengths = Object.keys(byLen).map(Number).sort((a, b) => b - a);
+                    html += lengths.map(len => `<div class="length-group"><div class="length-label">${len} lettere (${byLen[len].length})</div><div class="results-grid">${byLen[len].map(w => wordSpan(w, 'result-partial')).join('')}</div></div>`).join('');
+                } else {
+                    html += `<div class="no-results-small">Nessuna</div>`;
+                }
+                html += `</div>`;
             }
             
             container.innerHTML = html;

@@ -1,31 +1,50 @@
-# 🔤 Anagrammi Italiano
+# 🔤 Enigmistica
 
-Web app per trovare anagrammi di parole italiane, utilizzabile da smartphone e desktop.
+Web app per anagrammi e ricerca parole italiane, utilizzabile da smartphone e desktop.
 
 **👉 [Prova l'app](https://infingardo.github.io/Enigmistica/)**
 
 ## Funzionalità
 
+### 🔄 Anagrammi
 - **Anagrammi perfetti** — tutte le lettere usate una volta
 - **Multi-parola** — combinazioni di 2-4 parole che formano l'anagramma
 - **Parole incluse** — sub-anagrammi (parole formate con un sottoinsieme delle lettere)
-- **Due vocabolari:**
-  - 📘 Ridotto (~31k parole) — veloce, solo lemmi principali
-  - 📚 Completo (~283k parole) — include forme flesse, plurali, coniugazioni
+
+### 🔍 Ricerca parole
+Cerca parole usando pattern con caratteri speciali:
+
+| Carattere | Significato |
+|-----------|-------------|
+| `.` o `?` | una lettera qualsiasi |
+| `+` | una vocale (a, e, i, o, u) |
+| `-` | una consonante |
+| `*` | zero o più lettere |
+
+**Esempi:**
+- `cas+` → casa, case, caso, casi
+- `*zione` → parole che finiscono in "-zione"
+- `p-+ma` → prima, piuma...
+- `..ntro` → centro, contro, dentro...
+- `a*z*a` → inizia con "a", contiene "z", finisce con "a"
+
+### 📚 Vocabolari
+- 📘 **Ridotto** (~31k parole) — veloce, solo lemmi principali
+- 📚 **Completo** (~283k parole) — include forme flesse, plurali, coniugazioni
+
+### ⚙️ Altre funzionalità
 - **Personalizzazione** — aggiungi o rimuovi parole dal dizionario
-- **Offline** — dopo il primo caricamento, il dizionario resta in cache nel browser
-
-## Screenshot
-
-![Screenshot](screenshot.png)
+- **Offline** — dopo il primo caricamento, il dizionario resta in cache
+- **Esportazione** — scarica il dizionario personalizzato
 
 ## Uso
 
 1. Apri il [sito](https://infingardo.github.io/Enigmistica/)
 2. Seleziona il vocabolario (Ridotto o Completo)
-3. Scrivi una parola e premi "Cerca anagrammi"
-4. Clicca su un risultato per cercarne gli anagrammi
-5. Tieni premuto (mobile) o click destro (desktop) per rimuovere una parola
+3. Scegli la tab **Anagrammi** o **Cerca parole**
+4. Scrivi una parola o un pattern e premi Cerca
+5. Clicca su un risultato per cercarne gli anagrammi
+6. Tieni premuto (mobile) o click destro (desktop) per altre opzioni
 
 ## Installazione locale
 
@@ -46,8 +65,6 @@ cd Enigmistica
 ## Crediti
 
 Il vocabolario proviene da **[Enilab](http://www.enignet.it/software.html)**, software gratuito per l'enigmistica sviluppato da Giulio Ferrari e distribuito dalla **[Biblioteca Enigmistica Italiana (BEI)](http://www.enignet.it/)**.
-
-Grazie alla BEI per il lavoro di curatela del vocabolario italiano.
 
 ## Licenza
 
