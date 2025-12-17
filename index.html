@@ -296,6 +296,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('anagrammi')">🔄 Anagrammi</button>
             <button class="tab" onclick="switchTab('ricerca')">🔍 Cerca parole</button>
+            <button class="tab" onclick="switchTab('quiz')">🎮 Quiz</button>
         </div>
         
         <!-- Tab Anagrammi -->
@@ -349,6 +350,111 @@
             
             <button class="btn-primary" onclick="searchPattern()" id="btnPattern" disabled style="width: 100%;">🔍 Cerca parole</button>
             <p class="hint">Es: <code>cas+</code> → casa, case, caso | <code>*mente</code> → parole che finiscono in "mente"</p>
+        </div>
+
+        <!-- Tab Quiz -->
+        <div class="tab-content" id="tab-quiz">
+            <div id="quizContainer">
+                <div id="quizSetup">
+                    <h3 style="text-align: center; margin-bottom: 20px;">🎮 Quiz Anagrammi</h3>
+                    <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">Indovina la parola nascosta nell'anagramma!</p>
+
+                    <div class="options">
+                        <div class="option">
+                            <label for="selDifficulty">Difficoltà:</label>
+                            <select id="selDifficulty">
+                                <option value="easy">Facile (4-6 lettere)</option>
+                                <option value="medium" selected>Medio (7-9 lettere)</option>
+                                <option value="hard">Difficile (10+ lettere)</option>
+                            </select>
+                        </div>
+                        <div class="option">
+                            <input type="checkbox" id="chkTimer" checked>
+                            <label for="chkTimer">Timer (60s)</label>
+                        </div>
+                    </div>
+
+                    <button class="btn-success" onclick="startQuiz()" id="btnStartQuiz" disabled style="width: 100%;">▶️ Inizia Quiz</button>
+
+                    <div id="quizStats" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Best Score</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #f39c12;" id="bestScore">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Partite Giocate</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #3498db;" id="gamesPlayed">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="quizGame" class="hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <span style="font-size: 1.2em; font-weight: bold; color: #27ae60;">🏆 <span id="currentScore">0</span></span>
+                            <span style="margin-left: 15px; font-size: 1em; color: #e67e22;">🔥 <span id="currentStreak">0</span></span>
+                        </div>
+                        <div id="timerDisplay" style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">⏱️ <span id="timeLeft">60</span>s</div>
+                    </div>
+
+                    <div style="background: #ecf0f1; border-radius: 12px; padding: 30px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px;">Riordina le lettere:</div>
+                        <div id="scrambledWord" style="font-size: 2.5em; font-weight: bold; color: #2c3e50; letter-spacing: 8px; font-family: monospace;"></div>
+                        <div style="font-size: 0.85em; color: #95a5a6; margin-top: 10px;" id="wordLengthHint"></div>
+                    </div>
+
+                    <input type="text" id="quizAnswer" placeholder="La tua risposta..." onkeyup="handleQuizKeyUp(event)" style="text-transform: lowercase;">
+
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-primary" onclick="checkAnswer()" style="flex: 2;">✓ Verifica</button>
+                        <button class="btn-warning btn-small" onclick="giveHint()" id="btnHint">💡 Aiuto</button>
+                        <button class="btn-secondary btn-small" onclick="skipWord()">⏭️ Salta</button>
+                    </div>
+
+                    <div id="quizFeedback" class="hidden" style="margin-top: 15px; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold;"></div>
+
+                    <button class="btn-danger btn-small" onclick="endQuiz()" style="width: 100%; margin-top: 15px;">🚪 Termina Quiz</button>
+                </div>
+
+                <div id="quizResults" class="hidden">
+                    <h3 style="text-align: center; margin-bottom: 20px;">🎉 Quiz Terminato!</h3>
+
+                    <div style="background: #ecf0f1; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div style="font-size: 3em; font-weight: bold; color: #27ae60;" id="finalScore">0</div>
+                            <div style="font-size: 1em; color: #7f8c8d;">Punteggio Finale</div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Corrette</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #27ae60;" id="correctAnswers">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Sbagliate</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #e74c3c;" id="wrongAnswers">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Saltate</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #95a5a6;" id="skippedWords">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Streak Max</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #e67e22;" id="maxStreakResult">0</div>
+                            </div>
+                        </div>
+
+                        <div id="newRecord" class="hidden" style="margin-top: 20px; padding: 12px; background: #f39c12; color: white; border-radius: 8px; text-align: center; font-weight: bold;">
+                            🏆 Nuovo Record! 🏆
+                        </div>
+                    </div>
+
+                    <button class="btn-success" onclick="startQuiz()" style="width: 100%;">🔄 Gioca Ancora</button>
+                    <button class="btn-secondary" onclick="backToQuizSetup()" style="width: 100%; margin-top: 10px;">⚙️ Cambia Impostazioni</button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -421,9 +527,13 @@
             currentTab = tab;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.tab:nth-child(${tab === 'anagrammi' ? 1 : 2})`).classList.add('active');
+            const tabIndex = tab === 'anagrammi' ? 1 : (tab === 'ricerca' ? 2 : 3);
+            document.querySelector(`.tab:nth-child(${tabIndex})`).classList.add('active');
             document.getElementById(`tab-${tab}`).classList.add('active');
             document.getElementById('resultsCard').classList.add('hidden');
+
+            // Load quiz stats when switching to quiz tab
+            if (tab === 'quiz') loadQuizStats();
         }
         
         function openDB() {
@@ -954,6 +1064,301 @@
         function showSuccess(msg) { const el = document.getElementById('infoMessage'); el.textContent = msg; el.className = 'info-message success'; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 2500); }
         function handleKeyUp(e, tab) { if (e.key === 'Enter') { if (tab === 'anagrammi') findAnagrams(); else searchPattern(); } }
         function formatNumber(n) { return n.toLocaleString('it-IT'); }
+
+        // ===== QUIZ FUNCTIONALITY =====
+        let quizState = {
+            active: false,
+            currentWord: null,
+            scrambled: null,
+            score: 0,
+            streak: 0,
+            maxStreak: 0,
+            correct: 0,
+            wrong: 0,
+            skipped: 0,
+            hintsUsed: 0,
+            revealedLetters: [],
+            timer: null,
+            timeLeft: 60,
+            timerEnabled: true,
+            difficulty: 'medium'
+        };
+
+        function loadQuizStats() {
+            const bestScore = localStorage.getItem('quizBestScore') || 0;
+            const gamesPlayed = localStorage.getItem('quizGamesPlayed') || 0;
+            document.getElementById('bestScore').textContent = bestScore;
+            document.getElementById('gamesPlayed').textContent = gamesPlayed;
+
+            // Enable start button if dictionary loaded
+            document.getElementById('btnStartQuiz').disabled = !wordList || wordList.length === 0;
+        }
+
+        function getRandomWord() {
+            const difficulty = document.getElementById('selDifficulty').value;
+            let minLen, maxLen;
+
+            if (difficulty === 'easy') {
+                minLen = 4; maxLen = 6;
+            } else if (difficulty === 'medium') {
+                minLen = 7; maxLen = 9;
+            } else {
+                minLen = 10; maxLen = 99;
+            }
+
+            // Filter words by length
+            const filtered = wordList.filter(w => {
+                const clean = w.replace(/['-]/g, '');
+                return clean.length >= minLen && clean.length <= maxLen;
+            });
+
+            if (filtered.length === 0) return null;
+            return filtered[Math.floor(Math.random() * filtered.length)];
+        }
+
+        function scrambleWord(word) {
+            const clean = word.replace(/['-]/g, '');
+            const letters = clean.split('');
+
+            // Fisher-Yates shuffle
+            for (let i = letters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [letters[i], letters[j]] = [letters[j], letters[i]];
+            }
+
+            const scrambled = letters.join('');
+            // Ensure it's actually scrambled (not same as original)
+            if (scrambled === clean && clean.length > 1) {
+                return scrambleWord(word);
+            }
+            return scrambled;
+        }
+
+        function startQuiz() {
+            if (!wordList || wordList.length === 0) {
+                alert('Carica prima un dizionario!');
+                return;
+            }
+
+            // Reset state
+            quizState = {
+                active: true,
+                score: 0,
+                streak: 0,
+                maxStreak: 0,
+                correct: 0,
+                wrong: 0,
+                skipped: 0,
+                hintsUsed: 0,
+                revealedLetters: [],
+                timeLeft: 60,
+                timerEnabled: document.getElementById('chkTimer').checked,
+                difficulty: document.getElementById('selDifficulty').value
+            };
+
+            // UI transitions
+            document.getElementById('quizSetup').classList.add('hidden');
+            document.getElementById('quizResults').classList.add('hidden');
+            document.getElementById('quizGame').classList.remove('hidden');
+
+            // Update timer visibility
+            document.getElementById('timerDisplay').classList.toggle('hidden', !quizState.timerEnabled);
+
+            nextWord();
+        }
+
+        function nextWord() {
+            const word = getRandomWord();
+            if (!word) {
+                alert('Nessuna parola disponibile per questa difficoltà!');
+                endQuiz();
+                return;
+            }
+
+            quizState.currentWord = word;
+            quizState.scrambled = scrambleWord(word);
+            quizState.hintsUsed = 0;
+            quizState.revealedLetters = [];
+
+            // Update UI
+            document.getElementById('scrambledWord').textContent = quizState.scrambled.toUpperCase().split('').join(' ');
+            document.getElementById('wordLengthHint').textContent = `${quizState.currentWord.length} lettere`;
+            document.getElementById('quizAnswer').value = '';
+            document.getElementById('quizAnswer').focus();
+            document.getElementById('quizFeedback').classList.add('hidden');
+            document.getElementById('btnHint').disabled = false;
+
+            updateScoreDisplay();
+
+            // Start/reset timer
+            if (quizState.timerEnabled) {
+                clearInterval(quizState.timer);
+                quizState.timeLeft = 60;
+                updateTimerDisplay();
+                quizState.timer = setInterval(() => {
+                    quizState.timeLeft--;
+                    updateTimerDisplay();
+                    if (quizState.timeLeft <= 0) {
+                        clearInterval(quizState.timer);
+                        showFeedback('⏰ Tempo scaduto! Era: ' + quizState.currentWord, 'error');
+                        quizState.wrong++;
+                        quizState.streak = 0;
+                        setTimeout(nextWord, 2000);
+                    }
+                }, 1000);
+            }
+        }
+
+        function checkAnswer() {
+            const answer = document.getElementById('quizAnswer').value.trim().toLowerCase();
+            const correct = quizState.currentWord.toLowerCase();
+
+            if (!answer) return;
+
+            if (answer === correct) {
+                // Correct answer!
+                const basePoints = 10;
+                const timeBonus = quizState.timerEnabled ? Math.floor(quizState.timeLeft / 10) : 0;
+                const streakBonus = quizState.streak * 2;
+                const hintPenalty = quizState.hintsUsed * 2;
+                const points = Math.max(1, basePoints + timeBonus + streakBonus - hintPenalty);
+
+                quizState.score += points;
+                quizState.correct++;
+                quizState.streak++;
+                quizState.maxStreak = Math.max(quizState.maxStreak, quizState.streak);
+
+                showFeedback(`✓ Esatto! +${points} punti 🎉`, 'success');
+                clearInterval(quizState.timer);
+                setTimeout(nextWord, 1500);
+            } else {
+                // Wrong answer
+                quizState.wrong++;
+                quizState.streak = 0;
+                showFeedback(`✗ Sbagliato! Era: ${quizState.currentWord}`, 'error');
+                clearInterval(quizState.timer);
+                setTimeout(nextWord, 2500);
+            }
+
+            updateScoreDisplay();
+        }
+
+        function giveHint() {
+            if (quizState.hintsUsed >= 2) {
+                alert('Massimo 2 aiuti per parola!');
+                return;
+            }
+
+            const word = quizState.currentWord.replace(/['-]/g, '');
+            const unrevealed = [];
+
+            for (let i = 0; i < word.length; i++) {
+                if (!quizState.revealedLetters.includes(i)) {
+                    unrevealed.push(i);
+                }
+            }
+
+            if (unrevealed.length === 0) return;
+
+            // Reveal a random unrevealed letter
+            const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+            quizState.revealedLetters.push(randomIndex);
+            quizState.hintsUsed++;
+
+            // Build hint string
+            let hintStr = '';
+            for (let i = 0; i < word.length; i++) {
+                if (quizState.revealedLetters.includes(i)) {
+                    hintStr += word[i].toUpperCase() + ' ';
+                } else {
+                    hintStr += '_ ';
+                }
+            }
+
+            document.getElementById('scrambledWord').textContent = hintStr.trim();
+
+            if (quizState.hintsUsed >= 2) {
+                document.getElementById('btnHint').disabled = true;
+            }
+
+            showFeedback(`💡 Lettera rivelata! (-2 punti)`, 'warning');
+        }
+
+        function skipWord() {
+            quizState.skipped++;
+            quizState.streak = 0;
+            showFeedback(`⏭️ Saltata! Era: ${quizState.currentWord}`, 'warning');
+            clearInterval(quizState.timer);
+            setTimeout(nextWord, 2000);
+        }
+
+        function endQuiz() {
+            clearInterval(quizState.timer);
+            quizState.active = false;
+
+            // Update stats
+            const gamesPlayed = parseInt(localStorage.getItem('quizGamesPlayed') || 0) + 1;
+            localStorage.setItem('quizGamesPlayed', gamesPlayed);
+
+            const bestScore = parseInt(localStorage.getItem('quizBestScore') || 0);
+            const isNewRecord = quizState.score > bestScore;
+
+            if (isNewRecord) {
+                localStorage.setItem('quizBestScore', quizState.score);
+            }
+
+            // Show results
+            document.getElementById('quizGame').classList.add('hidden');
+            document.getElementById('quizResults').classList.remove('hidden');
+
+            document.getElementById('finalScore').textContent = quizState.score;
+            document.getElementById('correctAnswers').textContent = quizState.correct;
+            document.getElementById('wrongAnswers').textContent = quizState.wrong;
+            document.getElementById('skippedWords').textContent = quizState.skipped;
+            document.getElementById('maxStreakResult').textContent = quizState.maxStreak;
+
+            document.getElementById('newRecord').classList.toggle('hidden', !isNewRecord);
+
+            loadQuizStats();
+        }
+
+        function backToQuizSetup() {
+            document.getElementById('quizResults').classList.add('hidden');
+            document.getElementById('quizSetup').classList.remove('hidden');
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('currentScore').textContent = quizState.score;
+            document.getElementById('currentStreak').textContent = quizState.streak;
+        }
+
+        function updateTimerDisplay() {
+            const el = document.getElementById('timeLeft');
+            el.textContent = quizState.timeLeft;
+
+            // Color warning
+            if (quizState.timeLeft <= 10) {
+                el.style.color = '#e74c3c';
+            } else if (quizState.timeLeft <= 30) {
+                el.style.color = '#f39c12';
+            } else {
+                el.style.color = '#27ae60';
+            }
+        }
+
+        function showFeedback(message, type) {
+            const el = document.getElementById('quizFeedback');
+            el.textContent = message;
+            el.className = '';
+            el.classList.add('info-message', type);
+            el.classList.remove('hidden');
+        }
+
+        function handleQuizKeyUp(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        }
     </script>
 </body>
 </html>
