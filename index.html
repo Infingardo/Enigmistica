@@ -3,957 +3,762 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anagrammi e Ricerca Parole</title>
+    <title>DermPath v1.9 - Complete Update</title>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-            color: #333;
-        }
-        
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.9em; }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 0;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid #3498db;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: white;
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .tab:hover { background: #ebf5fb; }
-        .tab.active { background: #3498db; color: white; }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .status-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .status { font-size: 0.9em; }
-        .status.loaded { color: #27ae60; }
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        
-        button {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        button:active:not(:disabled) { transform: scale(0.98); }
-        
-        .btn-primary { background: #3498db; color: white; }
-        .btn-primary:hover:not(:disabled) { background: #2980b9; }
-        .btn-success { background: #27ae60; color: white; }
-        .btn-success:hover:not(:disabled) { background: #1e8449; }
-        .btn-secondary { background: #ecf0f1; color: #333; }
-        .btn-secondary:hover:not(:disabled) { background: #bdc3c7; }
-        .btn-warning { background: #f39c12; color: white; }
-        .btn-warning:hover:not(:disabled) { background: #d68910; }
-        .btn-danger { background: #e74c3c; color: white; }
-        .btn-danger:hover:not(:disabled) { background: #c0392b; }
-        .btn-small { padding: 6px 12px; font-size: 0.85em; }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            font-size: 1.2em;
-            margin-bottom: 15px;
-        }
-        
-        input[type="text"]:focus { outline: none; border-color: #3498db; }
-        
-        .options { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-        .option { display: flex; align-items: center; gap: 6px; }
-        .option label { font-size: 0.9em; color: #555; }
-        
-        select { padding: 6px 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 0.9em; }
-        
-        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .results-header h3 { margin: 0; color: #2c3e50; }
-        .results-count { color: #7f8c8d; font-size: 0.9em; }
-        .results-container { max-height: 500px; overflow-y: auto; }
-        .results-section { margin-bottom: 20px; }
-        
-        .results-section h4 {
-            color: #3498db;
-            margin: 0 0 10px 0;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #ecf0f1;
-            font-size: 0.95em;
-        }
-        
-        .results-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-        
-        .result-word {
-            background: #ecf0f1;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.95em;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-        
-        .result-word:hover { background: #3498db; color: white; }
-        .result-multi { background: #e8f6f3; border-left: 3px solid #1abc9c; }
-        .result-multi:hover { background: #1abc9c; }
-        .result-partial { background: #fdf2e9; border-left: 3px solid #e67e22; }
-        .result-partial:hover { background: #e67e22; }
-        .result-custom { background: #e8f8f5; border: 1px dashed #1abc9c; }
-        .result-custom:hover { background: #1abc9c; }
-        
-        .no-results { text-align: center; color: #7f8c8d; padding: 30px; }
-        .no-results-small { color: #95a5a6; font-style: italic; padding: 8px 0; }
-        .loading-box { text-align: center; padding: 20px; }
-        
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #ecf0f1;
-            border-top-color: #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .progress-bar { width: 100%; height: 8px; background: #ecf0f1; border-radius: 4px; overflow: hidden; margin-top: 10px; }
-        .progress-fill { height: 100%; background: #3498db; transition: width 0.3s; }
-        
-        .info-message { padding: 12px 15px; border-radius: 8px; margin-top: 15px; font-size: 0.9em; }
-        .info-message.error { background: #fdedec; border-left: 4px solid #e74c3c; }
-        .info-message.success { background: #e8f6f3; border-left: 4px solid #27ae60; }
-        
-        .hidden { display: none !important; }
-        
-        .dict-options { margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
-        .dict-options summary { cursor: pointer; color: #7f8c8d; font-size: 0.9em; }
-        .dict-options-content { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .custom-words-count { font-size: 0.85em; color: #7f8c8d; margin-top: 10px; }
-        
-        .context-menu {
-            position: fixed;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            padding: 8px 0;
-            z-index: 1000;
-            min-width: 150px;
-        }
-        
-        .context-menu-item { padding: 10px 16px; cursor: pointer; font-size: 0.9em; }
-        .context-menu-item:hover { background: #f5f5f5; }
-        .context-menu-item.danger { color: #e74c3c; }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        
-        .modal { background: white; border-radius: 12px; padding: 25px; max-width: 400px; width: 100%; }
-        .modal h3 { margin: 0 0 20px 0; color: #2c3e50; }
-        .modal input { margin-bottom: 10px; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; }
-        
-        .length-group { margin-bottom: 8px; }
-        .length-label { font-size: 0.8em; color: #7f8c8d; margin-bottom: 4px; }
-        .hint { font-size: 0.8em; color: #95a5a6; text-align: center; margin-top: 10px; }
-        
-        .hint-box {
-            background: #fef9e7;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 0.85em;
-        }
-        
-        .hint-box code {
-            background: #fff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-        
-        .dict-selector { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        
-        .dict-btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .dict-btn:hover { border-color: #3498db; }
-        .dict-btn.active { border-color: #3498db; background: #ebf5fb; }
-        .dict-btn-title { font-weight: bold; color: #2c3e50; }
-        .dict-btn-info { font-size: 0.8em; color: #7f8c8d; margin-top: 4px; }
-        
-        .credits { font-size: 0.75em; color: #95a5a6; text-align: center; margin-top: 5px; }
-        .credits a { color: #7f8c8d; }
-        
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .card { padding: 15px; }
-            .options { flex-direction: column; gap: 10px; }
-            .status-bar { flex-direction: column; align-items: stretch; }
-            .btn-group { flex-direction: column; }
-            button { width: 100%; }
-            .modal-buttons { flex-direction: column; }
-            .tab { padding: 10px 8px; font-size: 0.85em; }
-        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html{font-family:system-ui,-apple-system,sans-serif;line-height:1.5}
+        .min-h-screen{min-height:100vh}.max-w-4xl{max-width:56rem;margin:0 auto}
+        .flex{display:flex}.flex-1{flex:1}.grid{display:grid}
+        .grid-cols-2{grid-template-columns:repeat(2,1fr)}
+        .items-center{align-items:center}.items-start{align-items:flex-start}
+        .justify-between{justify-content:space-between}.block{display:block}
+        .p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}
+        .py-3{padding:.75rem 0}.px-4{padding:0 1rem}
+        .mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}
+        .mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}
+        .ml-4{margin-left:1rem}.mr-3{margin-right:.75rem}.gap-2{gap:.5rem}.gap-4{gap:1rem}
+        .space-y-2>*+*{margin-top:.5rem}.space-y-3>*+*{margin-top:.75rem}.space-y-4>*+*{margin-top:1rem}
+        .w-full{width:100%}.w-10{width:2.5rem}.h-1{height:.25rem}.h-10{height:2.5rem}
+        .text-xs{font-size:.75rem}.text-sm{font-size:.875rem}.text-lg{font-size:1.125rem}.text-xl{font-size:1.25rem}.text-2xl{font-size:1.5rem}.text-3xl{font-size:1.875rem}
+        .font-bold{font-weight:700}.font-semibold{font-weight:600}.font-medium{font-weight:500}.italic{font-style:italic}.text-center{text-align:center}
+        .text-white{color:#fff}.text-slate-500{color:#64748b}.text-slate-600{color:#475569}.text-slate-700{color:#334155}.text-slate-800{color:#1e293b}
+        .text-blue-600{color:#2563eb}.text-blue-800{color:#1e40af}.text-blue-900{color:#1e3a8a}
+        .text-red-800{color:#991b1b}.text-red-900{color:#7f1d1d}.text-amber-800{color:#92400e}.text-amber-900{color:#78350f}
+        .text-orange-800{color:#9a3412}.text-green-700{color:#15803d}.text-green-800{color:#166534}
+        .text-indigo-800{color:#3730a3}.text-indigo-900{color:#312e81}.text-violet-800{color:#5b21b6}
+        .text-teal-800{color:#115e59}.text-teal-900{color:#134e4a}.text-pink-800{color:#9d174d}
+        .bg-white{background:#fff}.bg-slate-50{background:#f8fafc}.bg-slate-100{background:#f1f5f9}.bg-slate-200{background:#e2e8f0}.bg-slate-300{background:#cbd5e1}
+        .bg-blue-50{background:#eff6ff}.bg-blue-600{background:#2563eb}.bg-blue-700{background:#1d4ed8}
+        .bg-green-50{background:#f0fdf4}.bg-green-600{background:#16a34a}.bg-green-700{background:#15803d}
+        .bg-red-50{background:#fef2f2}.bg-red-100{background:#fee2e2}.bg-amber-50{background:#fffbeb}.bg-amber-100{background:#fef3c7}
+        .bg-purple-50{background:#faf5ff}.bg-orange-50{background:#fff7ed}.bg-orange-100{background:#ffedd5}
+        .bg-indigo-50{background:#eef2ff}.bg-indigo-100{background:#e0e7ff}.bg-violet-50{background:#f5f3ff}
+        .bg-teal-50{background:#f0fdfa}.bg-teal-100{background:#ccfbf1}.bg-pink-50{background:#fdf2f8}
+        .border{border-width:1px}.border-2{border-width:2px}
+        .border-slate-200{border-color:#e2e8f0}.border-slate-300{border-color:#cbd5e1}
+        .border-blue-200{border-color:#bfdbfe}.border-blue-300{border-color:#93c5fd}.border-blue-600{border-color:#2563eb}
+        .border-red-200{border-color:#fecaca}.border-red-300{border-color:#fca5a5}.border-red-500{border-color:#ef4444}
+        .border-amber-200{border-color:#fde68a}.border-amber-500{border-color:#f59e0b}
+        .border-orange-200{border-color:#fed7aa}.border-orange-500{border-color:#f97316}
+        .border-purple-200{border-color:#e9d5ff}.border-purple-300{border-color:#d8b4fe}
+        .border-indigo-200{border-color:#c7d2fe}.border-indigo-300{border-color:#a5b4fc}.border-indigo-500{border-color:#6366f1}
+        .border-violet-300{border-color:#c4b5fd}.border-teal-300{border-color:#5eead4}.border-teal-500{border-color:#14b8a6}
+        .border-pink-300{border-color:#f9a8d4}
+        .rounded{border-radius:.25rem}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-full{border-radius:9999px}
+        .shadow-lg{box-shadow:0 10px 15px -3px rgba(0,0,0,.1)}
+        .overflow-x-auto{overflow-x:auto}.cursor-pointer{cursor:pointer}.border-dashed{border-style:dashed}
+        select,input[type="text"],textarea{width:100%;padding:.75rem;border:2px solid #e2e8f0;border-radius:.5rem;font-size:1rem}
+        select:focus,input:focus,textarea:focus{outline:none;border-color:#2563eb}
+        table{width:100%;border-collapse:collapse}th,td{padding:.5rem;text-align:left;border-bottom:1px solid #e2e8f0}
     </style>
 </head>
 <body>
-    <h1>🔤 Enigmistica</h1>
-    <p class="subtitle">Anagrammi e ricerca parole italiane</p>
-    
-    <div class="card">
-        <div class="status-bar">
-            <div class="status" id="dictStatus">
-                <span id="statusText">⏳ Seleziona un vocabolario...</span>
-            </div>
-            <div class="btn-group">
-                <button class="btn-success btn-small" onclick="showAddWordModal()" id="btnAddWord" disabled>➕ Aggiungi</button>
-            </div>
-        </div>
-        
-        <div class="dict-selector" id="dictSelector">
-            <button class="dict-btn" onclick="loadDict('ridotto')">
-                <div class="dict-btn-title">📘 Ridotto</div>
-                <div class="dict-btn-info">~31k parole • Veloce</div>
-            </button>
-            <button class="dict-btn" onclick="loadDict('completo')">
-                <div class="dict-btn-title">📚 Completo</div>
-                <div class="dict-btn-info">~283k parole • Esaustivo</div>
-            </button>
-        </div>
-        
-        <div id="loadingIndicator" class="loading-box hidden">
-            <div class="spinner"></div>
-            <div id="loadingText">Caricamento...</div>
-            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
-        </div>
-        
-        <div id="infoMessage" class="info-message hidden"></div>
-        
-        <details class="dict-options hidden" id="dictOptions">
-            <summary>Opzioni dizionario</summary>
-            <div class="dict-options-content">
-                <button class="btn-secondary btn-small" onclick="exportDictionary()">📥 Esporta</button>
-                <button class="btn-warning btn-small" onclick="suggestWord()">✉️ Suggerisci</button>
-                <button class="btn-secondary btn-small" onclick="restoreRemoved()">♻️ Ripristina</button>
-                <button class="btn-danger btn-small" onclick="switchDict()">🔄 Cambia</button>
-            </div>
-            <div class="custom-words-count" id="customWordsCount"></div>
-        </details>
-        
-        <p class="credits">Vocabolario: <a href="http://www.enignet.it" target="_blank">Enilab/BEI</a></p>
-    </div>
-    
-    <div class="card" id="searchCard">
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('anagrammi')">🔄 Anagrammi</button>
-            <button class="tab" onclick="switchTab('ricerca')">🔍 Cerca parole</button>
-        </div>
-        
-        <!-- Tab Anagrammi -->
-        <div class="tab-content active" id="tab-anagrammi">
-            <input type="text" id="inputWord" placeholder="Scrivi una parola..." onkeyup="handleKeyUp(event, 'anagrammi')" disabled>
-            
-            <div class="options">
-                <div class="option"><input type="checkbox" id="chkMulti" checked><label for="chkMulti">Multi-parola</label></div>
-                <div class="option"><input type="checkbox" id="chkPartial" checked><label for="chkPartial">Parole incluse</label></div>
-                <div class="option"><label for="selMaxWords">Max:</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
-                <div class="option"><label for="selMinLen">Min:</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
-            </div>
-            
-            <button class="btn-primary" onclick="findAnagrams()" id="btnSearch" disabled style="width: 100%;">🔍 Cerca anagrammi</button>
-            <p class="hint">💡 Tieni premuto su una parola per rimuoverla</p>
-        </div>
-        
-        <!-- Tab Ricerca -->
-        <div class="tab-content" id="tab-ricerca">
-            <div class="hint-box">
-                <strong>Pattern:</strong> 
-                <code>.</code> o <code>?</code> = una lettera &nbsp;
-                <code>+</code> = vocale &nbsp;
-                <code>-</code> = consonante &nbsp;
-                <code>*</code> = più lettere
-            </div>
-            
-            <input type="text" id="inputPattern" placeholder="Es: cas+, *zione, p-+ma..." onkeyup="handleKeyUp(event, 'ricerca')" disabled>
-            
-            <div class="options">
-                <div class="option">
-                    <label for="selMinLenSearch">Lunghezza min:</label>
-                    <select id="selMinLenSearch">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3" selected>3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                </div>
-                <div class="option">
-                    <label for="selMaxLenSearch">max:</label>
-                    <select id="selMaxLenSearch">
-                        <option value="10">10</option>
-                        <option value="15" selected>15</option>
-                        <option value="20">20</option>
-                        <option value="99">∞</option>
-                    </select>
-                </div>
-            </div>
-            
-            <button class="btn-primary" onclick="searchPattern()" id="btnPattern" disabled style="width: 100%;">🔍 Cerca parole</button>
-            <p class="hint">Es: <code>cas+</code> → casa, case, caso | <code>*mente</code> → parole che finiscono in "mente"</p>
-        </div>
-    </div>
-    
-    <div class="card hidden" id="resultsCard">
-        <div class="results-header"><h3>Risultati</h3><span class="results-count" id="resultsCount"></span></div>
-        <div class="results-container" id="resultsContainer"></div>
-    </div>
-    
-    <div class="context-menu hidden" id="contextMenu">
-        <div class="context-menu-item" onclick="searchSelectedWord()">🔄 Anagrammi</div>
-        <div class="context-menu-item" onclick="patternSelectedWord()">🔍 Cerca pattern</div>
-        <div class="context-menu-item danger" onclick="removeSelectedWord()">🗑️ Rimuovi</div>
-    </div>
-    
-    <div class="modal-overlay hidden" id="addWordModal" onclick="closeModalOnOverlay(event)">
-        <div class="modal">
-            <h3>➕ Aggiungi parola</h3>
-            <input type="text" id="newWordInput" placeholder="Nuova parola..." onkeyup="handleAddWordKeyUp(event)">
-            <p style="font-size: 0.85em; color: #7f8c8d; margin: 0;">Salvata nel browser.</p>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeAddWordModal()">Annulla</button>
-                <button class="btn-success" onclick="addWord()">Aggiungi</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal-overlay hidden" id="suggestModal" onclick="closeModalOnOverlay(event)">
-        <div class="modal">
-            <h3>✉️ Suggerisci parola</h3>
-            <input type="text" id="suggestWordInput" placeholder="Parola da suggerire...">
-            <p style="font-size: 0.85em; color: #7f8c8d; margin: 0;">Si aprirà il client email.</p>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeSuggestModal()">Annulla</button>
-                <button class="btn-warning" onclick="sendSuggestion()">Invia</button>
-            </div>
-        </div>
-    </div>
+    <div id="root"></div>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+const{useState,useMemo,useCallback,memo}=React;
+const SC={MAJOR:3,MINOR:1,SOFT:0.9,RED_PENALTY:25,MIN_EXCL:5,THRESH:50};
 
-    <script>
-        const DICT_BASE = 'https://infingardo.github.io/Enigmistica/';
-        const DICT_FILES = { 
-            ridotto: DICT_BASE + 'dizionario_ridotto.txt', 
-            completo: DICT_BASE + 'dizionario_completo.txt' 
+const INIT={
+    pattern_primario:'',spongiosi:'',esocitosi:'',acantosi:'',paracheratosi:'',ipergranulosi:'',ipogranulosi:'',
+    vacuolizzazione_basale:'',necrosi_keratinociti:'',infiltrato_distribuzione:'',infiltrato_densita:'',
+    eosinofili:'',neutrofili:'',linfociti_atipici:'',epidermotropismo:'',alone_chiaro:false,cellule_cerebriformi:false,
+    cd30_positivi:false,microascessi_munro:false,vasculite:'',eritrociti_extravasati:'',sede_anatomica:'',note_cliniche:'',
+    edema_dermico:'',palisading_necrosi_mucina:false,microvescicole:false,corpi_civatte:false,
+    acantolisi:false,bolle_intraepidermiche:false,bolle_subepidermiche:false,infiltrato_neutrofili_pustole:false,
+    flame_figures:false,infiltrato_wedge_shaped:false,eosinofili_perivascolari_profondi:false,degranulazione_eosinofila:false,
+    necrosi_epidermica_focale:false,storia_farmaci:false,storia_puntura_insetto:false,
+    fibrosi_dermica:false,iperplasia_neurale:false,infiltrato_follicolare:false,spongiosi_follicolare:false,pustole_follicolari:false,
+    neutrofili_in_paracheratosi:false,assottigliamento_soprapapillare:false,granuli_cheratoialina:'',capillari_dilatati_papille:false,
+    saw_toothing:false,ipergranulosi_cuneo:false,granulomi_miescher:false,plugging_follicolare:false,
+    mucina_dermica:'',plasmacellule:'',infiltrato_perianessiale_profondo:false,necrosi_adipociti:false,emofagocitosi:false,
+    panniculite_tipo:'',panniculite_vasculite:false,
+    // v1.9 nuovi campi
+    fase_lesione:'',paracheratosi_mounds:false,infiltrato_manicotto:false,necrosi_cheratino_superficiale:false,
+    ghost_cells:false,calcificazione_basofila:false,trombi_fibrina:false,leucocitoclasia:false,depositi_emosiderina:false,
+    necrobiosi_sandwich:false,fibrina_centrale:false,mastociti_aggregati:false,cd117_pos:false,cd25_aberrante:false,
+    mxa_positivo:false,cd123_clusters:false,follicoli_germinativi:false,necrosi_ialina_grasso:false
+};
+
+const PATTERNS=[
+    {value:'spongotico',label:'Spongotico',desc:'Edema intercellulare'},
+    {value:'psoriasiforme',label:'Psoriasiforme',desc:'Allungamento rete ridges'},
+    {value:'interfaccia_lichenoide',label:'Interfaccia Lichenoide',desc:'Infiltrato banda densa'},
+    {value:'interfaccia_vacuolare',label:'Interfaccia Vacuolare',desc:'Vacuoli basali, infiltrato sparso'},
+    {value:'perivascolare',label:'Perivascolare',desc:'Infiltrato attorno vasi'},
+    {value:'perivascolare_eosinofilo',label:'Perivascolare Eosinofilo',desc:'Eosinofili perivascolari'},
+    {value:'vasculitico',label:'Vasculitico',desc:'Necrosi fibrinoide'},
+    {value:'vasculopatico',label:'Vasculopatico',desc:'Trombi senza infiammazione'},
+    {value:'granulomatoso',label:'Granulomatoso',desc:'Granulomi dermici'},
+    {value:'granulomatoso_palizzata',label:'Granulomatoso Palizzata',desc:'Necrobiosi + istiociti'},
+    {value:'subcorneo',label:'Subcorneo',desc:'Pustole sottocornee'},
+    {value:'intraepidermico',label:'Intraepidermico',desc:'Acantolisi'},
+    {value:'subepidermico_bolloso',label:'Subepidermico Bolloso',desc:'Bolle subepidermiche'},
+    {value:'interstiziale_eosinofilo',label:'Interstiziale Eosinofilo',desc:'Eosinofili diffusi'},
+    {value:'panniculitico',label:'Panniculitico',desc:'Infiltrato sottocute'},
+    {value:'mastocitario',label:'Mastocitario',desc:'Infiltrato mastociti'}
+];
+
+const RED_FLAGS=[
+    {flag:"microascessi_munro",diagnosi:"Psoriasi",escludi:["dermatite_allergica_contatto","dermatite_atopica_acuta"]},
+    {flag:"corpi_civatte",diagnosi:"Lichen planus",escludi:["psoriasi_vulgaris"]},
+    {flag:"eosinofili_marcati_edema",diagnosi:"Dermatite da contatto",escludi:["psoriasi_vulgaris"]},
+    {flag:"palisading_necrosi_mucina",diagnosi:"Granuloma anulare",escludi:["dermatite_allergica_contatto"]},
+    {flag:"epidermotropismo_alone",diagnosi:"Linfoma cutaneo",escludi:["dermatite_allergica_contatto"]},
+    {flag:"acantolisi_bolloso",diagnosi:"Pemfigo volgare",escludi:["pemfigoide_bolloso"]},
+    {flag:"bolle_subepidermiche_eosinofili",diagnosi:"Pemfigoide bolloso",escludi:["pemfigo_volgare"]},
+    {flag:"flame_figures_eosinofili",diagnosi:"Sindrome di Wells",escludi:["reazione_puntura_insetto"]},
+    {flag:"wedge_eosinofili_profondo",diagnosi:"Reazione da puntura",escludi:["sindrome_wells"]},
+    {flag:"neutrofili_paracheratosi_psoriasi",diagnosi:"Psoriasi (Segno Ñ)",escludi:["dermatite_allergica_contatto"]},
+    {flag:"granuli_grossolani_lsc",diagnosi:"LSC/Eczema cronico",escludi:["psoriasi_vulgaris"]},
+    {flag:"saw_toothing_civatte",diagnosi:"Lichen planus",escludi:["lupus_cutaneo_discoide"]},
+    {flag:"plasmacellule_psoriasiforme",diagnosi:"SIFILIDE SECONDARIA!",escludi:["psoriasi_vulgaris"]},
+    {flag:"granulomi_miescher_en",diagnosi:"Eritema nodoso",escludi:["lupus_panniculitis"]},
+    {flag:"emofagocitosi_lobulare",diagnosi:"SPTCL (linfoma)",escludi:["eritema_nodoso","lupus_panniculitis"]},
+    // v1.9 nuove red flags
+    {flag:"ghost_cells_panniculite",diagnosi:"Panniculite PANCREATICA!",escludi:["lupus_panniculitis","eritema_nodoso"]},
+    {flag:"trombi_no_lcv",diagnosi:"Vasculopatia (non vasculite)",escludi:["vasculite_leucocitoclastica"]},
+    {flag:"mxa_cd123_lupus",diagnosi:"Lupus/Connettivite",escludi:["micosi_fungoide_early"]},
+    {flag:"mastociti_cd25",diagnosi:"Mastocitosi sistemica",escludi:[]},
+    {flag:"paracheratosi_mounds_manicotto",diagnosi:"Pitiriasi rosea",escludi:["sifilide_secondaria"]}
+];
+
+const IHC_PERF={
+    PCR_TCR:{test:"PCR TCR dual-site",ind:"MF vs dermatite",sens:"82.6",spec:"95.7"},
+    DIF_lupus:{test:"DIF Lupus Band",ind:"Lupus cutaneo",sens:"71-84",spec:">90"},
+    DIF_LP:{test:"DIF IgM fibrillar",ind:"Lichen planus",sens:"78.5",spec:">90"},
+    CD123:{test:"CD123 ≥10 cellule",ind:"Lupus vs LPP",sens:"50",spec:"93"},
+    BP180:{test:"ELISA BP180",ind:"Pemfigoide",sens:"82-90",spec:"94"},
+    Treponema:{test:"IHC Treponema",ind:"Sifilide",sens:"60-70",spec:"100"},
+    SPTCL:{test:"CD3+CD8+βF1+CD56-",ind:"SPTCL",sens:">95",spec:">95"},
+    // v1.9 nuovi
+    MxA:{test:"MxA (IFN type I)",ind:"Lupus/DM vs altri",sens:"85-95",spec:">90"},
+    Ki67_pso:{test:"Ki-67 soprabasale",ind:"Psoriasi vs eczema",sens:"83",spec:"~70"},
+    CD117:{test:"CD117 + Triptasi",ind:"Mastocitosi",sens:">95",spec:">95"},
+    CD25_mast:{test:"CD25 aberrante",ind:"Mastocitosi sistemica",sens:"~90",spec:">95"}
+};
+
+const IHC_PSO_SPONG={
+    titolo:"Pannello IHC: Psoriasi vs Spongotico",
+    fonte:"Healthcare Bulletin 2025",
+    marcatori:[
+        {nome:"Ki-67",pso:"Soprabasale diffuso",spong:"Solo basale",note:"Forte discriminante"},
+        {nome:"p53",pso:"Iperespresso",spong:"Basale/debole",note:"Combinare con Ki-67"},
+        {nome:"CD34",pso:"Capillari densi tortuosi",spong:"Meno densi",note:"Angiogenesi"},
+        {nome:"IL-36γ",pso:"Forte epidermide sup",spong:"Assente/focale",note:"Alta specificità 2025"}
+    ]
+};
+
+const DX={
+    dermatite_allergica_contatto:{
+        nome:"Dermatite allergica da contatto",cat:"Spongotico",
+        major:{pattern_primario:"spongotico",spongiosi:["moderata","marcata"],esocitosi:"presente"},
+        minor:{eosinofili:["presenti","abbondanti"],infiltrato_distribuzione:"perivascolare_superficiale"},
+        note:"Pattern ipersensibilità IV. Eosinofili dermici frequenti.",
+        color:["PAS escludere dermatofiti"],ihc:null,
+        bib:{autori:"Usatine RP",titolo:"Contact Dermatitis",riv:"Am Fam Physician",anno:2010,pmid:"20672788"}
+    },
+    dermatite_atopica_acuta:{
+        nome:"Dermatite atopica (acuta)",cat:"Spongotico",
+        major:{pattern_primario:"spongotico",spongiosi:["moderata","marcata"],esocitosi:"presente"},
+        minor:{eosinofili:["presenti","abbondanti"],paracheratosi:"focale"},
+        note:"CLUE vs MF: spongiosi PROPORZIONATA all'esocitosi. Spongiosi follicolare nei fototipi scuri.",
+        color:["PAS"],ihc:null,
+        bib:{autori:"Weidinger S",titolo:"Atopic Dermatitis",riv:"Lancet",anno:2016,pmid:"26377142"}
+    },
+    dermatite_irritativa:{
+        nome:"Dermatite irritativa (ICD)",cat:"Spongotico",
+        major:{pattern_primario:"spongotico",spongiosi:["lieve","moderata"],necrosi_cheratino_superficiale:true},
+        minor:{neutrofili:["rari","presenti"],eosinofili:"assenti"},
+        note:"vs ACD: NECROSI cheratinociti superficiali, NEUTROFILI precoci, MENO eosinofili. Ballooning.",
+        color:["PAS"],ihc:null,
+        bib:{autori:"Brasch J",titolo:"ICD pathophysiology",riv:"Contact Dermatitis",anno:2014,pmid:"24372629"}
+    },
+    pitiriasi_rosea:{
+        nome:"Pitiriasi rosea",cat:"Spongotico",
+        major:{pattern_primario:"spongotico",spongiosi:["lieve","moderata"],paracheratosi_mounds:true},
+        minor:{infiltrato_manicotto:true,eritrociti_extravasati:"presenti"},
+        note:"Paracheratosi 'A TUMULI' (mounds). Infiltrato 'A MANICOTTO' perivascolare. NO plasmacellule (vs sifilide).",
+        color:["Sierologia lue obbligatoria"],ihc:null,
+        bib:{autori:"Drago F",titolo:"Pityriasis rosea",riv:"JAAD",anno:2016,pmid:"27212086"}
+    },
+    psoriasi_vulgaris:{
+        nome:"Psoriasi vulgaris",cat:"Psoriasiforme",
+        major:{pattern_primario:"psoriasiforme",acantosi:"marcata",paracheratosi:["moderata","marcata"],ipogranulosi:"si"},
+        minor:{neutrofili:["presenti","abbondanti"],microascessi_munro:true,neutrofili_in_paracheratosi:true,assottigliamento_soprapapillare:true,granuli_cheratoialina:"diminuiti",capillari_dilatati_papille:true},
+        note:"Creste REGOLARI. Granuloso ASSENTE. SEGNO Ñ. NO plasmacellule!",
+        color:["PAS escludere tinea"],ihc:null,
+        bib:{autori:"Armstrong AW",titolo:"Psoriasis",riv:"JAMA",anno:2020,pmid:"32427307"}
+    },
+    sifilide_secondaria:{
+        nome:"Sifilide secondaria",cat:"Psoriasiforme/Lichenoide",
+        major:{pattern_primario:["psoriasiforme","interfaccia_lichenoide"],plasmacellule:["presenti","abbondanti"]},
+        minor:{vacuolizzazione_basale:"presente",infiltrato_distribuzione:["perivascolare_superficiale","perivascolare_profondo"]},
+        note:"⚠️ GRANDE SIMULATRICE! CLUE: PLASMACELLULE (assenti in psoriasi). Endotelio tumefatto.",
+        color:["IHC anti-Treponema (sens 60-70%, spec 100%)","Warthin-Starry"],ihc:"Treponema",
+        bib:{autori:"Carlson JA",titolo:"Secondary syphilis spectrum",riv:"Am J Dermatopathol",anno:2011,pmid:"21317614"}
+    },
+    lichen_planus:{
+        nome:"Lichen planus",cat:"Interfaccia/Lichenoide",
+        major:{pattern_primario:"interfaccia_lichenoide",infiltrato_distribuzione:"banda_lichenoide",vacuolizzazione_basale:"presente"},
+        minor:{necrosi_keratinociti:"presente",ipergranulosi:"si",saw_toothing:true,ipergranulosi_cuneo:true,corpi_civatte:true},
+        note:"Banda DENSA. Civatte. SAW-TOOTHING. Ipergranulosi CUNEO. NO paracheratosi. DIF: IgM fibrillar (sens 78%).",
+        color:["IF diretta"],ihc:"DIF_LP",
+        bib:{autori:"Gupta S",titolo:"Lichen Planus",riv:"Indian J Dermatol",anno:2015,pmid:"26120146"}
+    },
+    lupus_cutaneo_discoide:{
+        nome:"Lupus eritematoso discoide",cat:"Interfaccia/Vacuolare",
+        major:{pattern_primario:"interfaccia_vacuolare",vacuolizzazione_basale:["presente","marcata"],plugging_follicolare:true},
+        minor:{mucina_dermica:["focale","abbondante"],infiltrato_perianessiale_profondo:true,plasmacellule:"presenti",mxa_positivo:true,cd123_clusters:true},
+        note:"PLUGGING FOLLICOLARE. Infiltrato sup+PROFONDO. MUCINA. MxA+ cheratinociti. CD123 CLUSTERS (vs sparso in MF).",
+        color:["IF diretta","Alcian blue","CD123","MxA"],ihc:"DIF_lupus",
+        bib:{autori:"Crowson AN",titolo:"Lupus cutaneous pathology",riv:"J Cutan Pathol",anno:2001,pmid:"11168761"}
+    },
+    lupus_cutaneo_subacuto:{
+        nome:"Lupus eritematoso subacuto",cat:"Interfaccia/Vacuolare",
+        major:{pattern_primario:"interfaccia_vacuolare",vacuolizzazione_basale:"presente"},
+        minor:{mucina_dermica:["focale","abbondante"],infiltrato_distribuzione:"perivascolare_superficiale",mxa_positivo:true},
+        note:"Più superficiale del discoide. Meno plugging. Foto-distribuito. Anti-Ro/SSA. MxA+.",
+        color:["IF diretta","Alcian blue","MxA"],ihc:"MxA",
+        bib:{autori:"Sontheimer RD",titolo:"SCLE",riv:"Clin Dermatol",anno:1985,pmid:"3833325"}
+    },
+    dermatomiosite:{
+        nome:"Dermatomiosite",cat:"Interfaccia/Vacuolare",
+        major:{pattern_primario:"interfaccia_vacuolare",vacuolizzazione_basale:"presente",mucina_dermica:["focale","abbondante"]},
+        minor:{mxa_positivo:true,edema_dermico:["moderato","marcato"]},
+        note:"Vacuolare + MUCINA dermica abbondante. MxA+ (firma IFN tipo I). Atrofia epidermica possibile.",
+        color:["Alcian blue","MxA"],ihc:"MxA",
+        bib:{autori:"Casciola-Rosen L",titolo:"Dermatomyositis",riv:"Curr Opin Rheumatol",anno:2015,pmid:"25415528"}
+    },
+    lichen_simplex_chronicus:{
+        nome:"Lichen simplex chronicus",cat:"Psoriasiforme/Spongotico",
+        major:{pattern_primario:["psoriasiforme","spongotico"],acantosi:["moderata","marcata"],ipergranulosi:"si"},
+        minor:{granuli_cheratoialina:"grossolani",fibrosi_dermica:true},
+        note:"IPERGRANULOSI. Granuli GROSSOLANI (vs diminuiti psoriasi). Fibrosi VERTICALE.",
+        color:[],ihc:null,
+        bib:{autori:"Lotti T",titolo:"LSC and prurigo",riv:"Dermatol Ther",anno:2008,pmid:"18715294"}
+    },
+    eritema_multiforme:{
+        nome:"Eritema multiforme",cat:"Interfaccia",
+        major:{pattern_primario:"interfaccia_lichenoide",necrosi_keratinociti:"marcata",vacuolizzazione_basale:"presente"},
+        minor:{eosinofili:"presenti"},
+        note:"Necrosi cheratinocitaria DIFFUSA. Post-HSV. Infiltrato spesso SCARSO.",
+        color:[],ihc:null,
+        bib:{autori:"Sokumbi O",titolo:"EM features",riv:"J Am Acad Dermatol",anno:2012,pmid:"22177632"}
+    },
+    vasculite_leucocitoclastica:{
+        nome:"Vasculite leucocitoclastica",cat:"Vasculitico",
+        major:{pattern_primario:["perivascolare","vasculitico"],vasculite:"si",neutrofili:"abbondanti",leucocitoclasia:true},
+        minor:{eritrociti_extravasati:["presenti","abbondanti"]},
+        note:"NECROSI FIBRINOIDE parete. LEUCOCITOCLASIA (polvere nucleare). Porpora palpabile.",
+        color:["IF diretta per IgA"],ihc:null,
+        bib:{autori:"Sunderkötter CH",titolo:"Cutaneous Vasculitis",riv:"Arthritis Rheumatol",anno:2018,pmid:"29266783"}
+    },
+    vasculopatia_livedoide:{
+        nome:"Vasculopatia livedoide",cat:"Vasculopatico",
+        major:{pattern_primario:"vasculopatico",trombi_fibrina:true,leucocitoclasia:false},
+        minor:{depositi_emosiderina:true},
+        note:"⚠️ NON È VASCULITE! Trombi fibrina intraluminali, ispessimento ialino pareti. NO leucocitoclasia. Porpora reticolata.",
+        color:["Perls (emosiderina)","Fibrina"],ihc:null,
+        bib:{autori:"Criado PR",titolo:"Livedoid vasculopathy",riv:"An Bras Dermatol",anno:2011,pmid:"21603806"}
+    },
+    reazione_puntura_insetto:{
+        nome:"Reazione da puntura",cat:"Eosinofilo",
+        major:{pattern_primario:["perivascolare_eosinofilo","interstiziale_eosinofilo"],eosinofili:"abbondanti"},
+        minor:{edema_dermico:["moderato","marcato"],infiltrato_wedge_shaped:true,necrosi_epidermica_focale:true},
+        note:"Pattern WEDGE-SHAPED. Possibile necrosi focale (punto inoculo).",
+        color:["Giemsa se sospetto leishmaniosi"],ihc:null,
+        bib:{autori:"Miteva M",titolo:"Arthropod Bite",riv:"Dermatol Ther",anno:2012,pmid:"22741932"}
+    },
+    sindrome_wells:{
+        nome:"Sindrome di Wells",cat:"Eosinofilo",
+        major:{pattern_primario:["interstiziale_eosinofilo","perivascolare_eosinofilo"],eosinofili:"abbondanti",flame_figures:true},
+        minor:{edema_dermico:["moderato","marcato"],degranulazione_eosinofila:true},
+        note:"⚠️ FLAME FIGURES patognomoniche.",
+        color:["H&E","Congo rosso"],ihc:null,
+        bib:{autori:"Räßler F",titolo:"Eosinophilic cellulitis",riv:"JEADV",anno:2016,pmid:"27291961"}
+    },
+    drug_reaction_eosinofila:{
+        nome:"Drug reaction eosinofila",cat:"Eosinofilo",
+        major:{pattern_primario:["perivascolare_eosinofilo","interfaccia_vacuolare"],eosinofili:["presenti","abbondanti"],eosinofili_perivascolari_profondi:true},
+        minor:{vacuolizzazione_basale:"presente",storia_farmaci:true},
+        note:"⚠️ Eosinofili sup + PROFONDI = drug. Correlazione farmaci!",
+        color:[],ihc:null,
+        bib:{autori:"Mockenhaupt M",titolo:"Drug reactions",riv:"Allergol Select",anno:2017,pmid:"30402608"}
+    },
+    orticaria:{
+        nome:"Orticaria",cat:"Eosinofilo",
+        major:{pattern_primario:["perivascolare_eosinofilo","perivascolare"],edema_dermico:["moderato","marcato"]},
+        minor:{eosinofili:["presenti","abbondanti"],spongiosi:"lieve"},
+        note:"Edema marcato, SCARSO infiltrato. Pattern 'cell-poor'.",
+        color:[],ihc:null,
+        bib:{autori:"Zuberbier T",titolo:"Urticaria guideline",riv:"Allergy",anno:2022,pmid:"34536239"}
+    },
+    prurigo_nodularis:{
+        nome:"Prurigo nodularis",cat:"Eosinofilo",
+        major:{pattern_primario:["perivascolare","perivascolare_eosinofilo"],acantosi:["moderata","marcata"],ipergranulosi:"si"},
+        minor:{fibrosi_dermica:true,iperplasia_neurale:true,granuli_cheratoialina:"grossolani"},
+        note:"Ipergranulosi. Fibrosi verticale. Iperplasia neurale (S100+).",
+        color:["S100","PGP9.5"],ihc:null,
+        bib:{autori:"Williams KA",titolo:"Prurigo nodularis",riv:"JAAD",anno:2020,pmid:"32461078"}
+    },
+    follicolite_eosinofila:{
+        nome:"Follicolite eosinofila",cat:"Eosinofilo",
+        major:{pattern_primario:["perivascolare_eosinofilo","interstiziale_eosinofilo"],eosinofili:"abbondanti",infiltrato_follicolare:true},
+        minor:{spongiosi_follicolare:true,pustole_follicolari:true},
+        note:"⚠️ Eosinofili CENTRATI SUI FOLLICOLI. HIV: CD4<300.",
+        color:["PAS/Grocott","Gram"],ihc:null,
+        bib:{autori:"Nervi SJ",titolo:"Eosinophilic folliculitis",riv:"JAAD",anno:2006,pmid:"16844513"}
+    },
+    micosi_fungoide_early:{
+        nome:"Micosi fungoide (early)",cat:"Linfoma cutaneo T",
+        major:{pattern_primario:["spongotico","interfaccia_lichenoide"],linfociti_atipici:"presenti"},
+        minor:{epidermotropismo:"presente",alone_chiaro:true},
+        note:"⚠️ LINFOMA! Epidermotropismo SENZA spongiosi. Alone chiaro. PCR TCR: sens 82.6%, spec 95.7%.",
+        color:["CD3","CD4","CD8","CD7 loss","TOX","PD-1"],ihc:"PCR_TCR",
+        bib:{autori:"Willemze R",titolo:"WHO-EORTC lymphomas",riv:"Blood",anno:2019,pmid:"30635287"}
+    },
+    granuloma_anulare:{
+        nome:"Granuloma anulare",cat:"Granulomatoso",
+        major:{pattern_primario:["granulomatoso","granulomatoso_palizzata"],palisading_necrosi_mucina:true},
+        minor:{mucina_dermica:["focale","abbondante"]},
+        note:"Palisading + MUCINA centrale (Alcian blue+). No necrosi fibrinoide. Rari eosinofili.",
+        color:["PAS","Alcian blue"],ihc:null,
+        bib:{autori:"Piette EW",titolo:"GA",riv:"JAAD",anno:2016,pmid:"27021234"}
+    },
+    necrobiosi_lipoidica:{
+        nome:"Necrobiosi lipoidica",cat:"Granulomatoso Palizzata",
+        major:{pattern_primario:["granulomatoso","granulomatoso_palizzata"],necrobiosi_sandwich:true},
+        minor:{plasmacellule:"presenti",fibrosi_dermica:true},
+        note:"Necrobiosi 'A SANDWICH' (strati infiammatori alternati a collagene ialinizzato). TUTTO SPESSORE derma. Plasmacellule.",
+        color:["PAS","VVG elastiche"],ihc:null,
+        bib:{autori:"Reid SD",titolo:"Necrobiosis lipoidica",riv:"Am J Clin Dermatol",anno:2013,pmid:"23329076"}
+    },
+    sarcoidosi_cutanea:{
+        nome:"Sarcoidosi cutanea",cat:"Granulomatoso",
+        major:{pattern_primario:"granulomatoso"},
+        minor:{},
+        note:"Granulomi 'NUDI'. NO necrosi caseosa. Polarizzazione NEGATIVA.",
+        color:["ZN/Fite","PAS/GMS","Luce polarizzata"],ihc:null,
+        bib:{autori:"Sanchez M",titolo:"Cutaneous sarcoidosis",riv:"Clin Chest Med",anno:2015,pmid:"26304139"}
+    },
+    pemfigo_volgare:{
+        nome:"Pemfigo volgare",cat:"Bolloso Intraepidermico",
+        major:{pattern_primario:"intraepidermico",acantolisi:true,bolle_intraepidermiche:true},
+        minor:{},
+        note:"⚠️ Acantolisi SOPRABASALE. Tombstoning. DIF: IgG rete (sens ~95%).",
+        color:["IF: IgG/C3 intercellulari"],ihc:null,
+        bib:{autori:"Joly P",titolo:"Pemphigus guidelines",riv:"JEADV",anno:2020,pmid:"32686180"}
+    },
+    pemfigoide_bolloso:{
+        nome:"Pemfigoide bolloso",cat:"Bolloso Subepidermico",
+        major:{pattern_primario:"subepidermico_bolloso",bolle_subepidermiche:true},
+        minor:{eosinofili:["presenti","abbondanti"]},
+        note:"⚠️ Bolle subepidermiche + EOSINOFILI. DIF: IgG+C3 lineari (sens ~80%). ELISA BP180: sens 82-90%, spec 94%.",
+        color:["IF: IgG+C3 lineari BMZ"],ihc:"BP180",
+        bib:{autori:"Schmidt E",titolo:"Pemphigoid",riv:"J Invest Dermatol",anno:2016,pmid:"26763419"}
+    },
+    dermatite_erpetiforme:{
+        nome:"Dermatite erpetiforme",cat:"Bolloso Subepidermico",
+        major:{pattern_primario:"subepidermico_bolloso",bolle_subepidermiche:true,neutrofili:["presenti","abbondanti"]},
+        minor:{},
+        note:"Microascessi NEUTROFILI tips papillari. DIF: IgA GRANULARE (gold standard, sens ~90%, spec ~100%).",
+        color:["IF: IgA granulare papille"],ihc:null,
+        bib:{autori:"Caproni M",titolo:"DH guidelines",riv:"JEADV",anno:2009,pmid:"19470041"}
+    },
+    eritema_nodoso:{
+        nome:"Eritema nodoso",cat:"Panniculite Settale",
+        major:{pattern_primario:"panniculitico",panniculite_tipo:"settale"},
+        minor:{granulomi_miescher:true,fibrosi_dermica:true,panniculite_vasculite:false},
+        note:"SETTALE senza vasculite. GRANULOMI MIESCHER (rosetta) quasi patognomonici. Escludere cause.",
+        color:["Workup sistemico"],ihc:null,
+        bib:{autori:"Requena L",titolo:"Panniculitis I",riv:"JAAD",anno:2001,pmid:"11169025"}
+    },
+    lupus_panniculitis:{
+        nome:"Lupus panniculitis",cat:"Panniculite Lobulare",
+        major:{pattern_primario:"panniculitico",panniculite_tipo:"lobulare",follicoli_germinativi:true},
+        minor:{mucina_dermica:["focale","abbondante"],plasmacellule:"presenti",vacuolizzazione_basale:"presente",necrosi_ialina_grasso:true},
+        note:"LOBULARE linfocitaria. FOLLICOLI LINFOIDI con centri germinativi. MUCINA nel grasso. Necrosi ialina.",
+        color:["IF diretta","Alcian blue"],ihc:"DIF_lupus",
+        bib:{autori:"Massone C",titolo:"Lupus panniculitis",riv:"Dermatol Clin",anno:2008,pmid:"18346555"}
+    },
+    panniculite_pancreatica:{
+        nome:"Panniculite pancreatica",cat:"Panniculite Lobulare",
+        major:{pattern_primario:"panniculitico",panniculite_tipo:"lobulare",ghost_cells:true},
+        minor:{calcificazione_basofila:true,neutrofili:"abbondanti"},
+        note:"⚠️ GHOST CELLS patognomoniche (adipociti senza nucleo, pareti ispessite). Calcificazione basofila (saponificazione). ESCLUDERE CARCINOMA PANCREAS!",
+        color:["Von Kossa (calcio)","Lipasi sierica"],ihc:null,
+        bib:{autori:"Requena L",titolo:"Panniculitis II",riv:"JAAD",anno:2001,pmid:"11169026"}
+    },
+    sptcl:{
+        nome:"SPTCL (Linfoma panniculitico)",cat:"Panniculite Lobulare / Linfoma",
+        major:{pattern_primario:"panniculitico",panniculite_tipo:"lobulare",linfociti_atipici:["presenti","abbondanti"]},
+        minor:{necrosi_adipociti:true,emofagocitosi:true},
+        note:"⚠️ LINFOMA! Linfociti 'rimming' adipociti. EMOFAGOCITOSI. IHC: CD3+CD8+βF1+CD56- (αβ). PCR TCR clonale.",
+        color:["CD3","CD8","CD4","βF1","CD56","Granzyme","CD68"],ihc:"SPTCL",
+        bib:{autori:"Willemze R",titolo:"WHO-EORTC",riv:"Blood",anno:2019,pmid:"30635287"}
+    },
+    vasculite_nodulare:{
+        nome:"Vasculite nodulare / Er. indurato",cat:"Panniculite Lobulare/Settale",
+        major:{pattern_primario:"panniculitico",panniculite_vasculite:true},
+        minor:{panniculite_tipo:"lobulare"},
+        note:"Lobulo-SETTALE + VASCULITE necrotizzante. Associazione TB (Bazin). Necrosi caseosa possibile.",
+        color:["ZN/Fite","PCR MTB"],ihc:null,
+        bib:{autori:"Segura S",titolo:"Erythema induratum",riv:"Arch Dermatol",anno:2008,pmid:"18490591"}
+    },
+    mastocitosi_cutanea:{
+        nome:"Mastocitosi cutanea",cat:"Mastocitario",
+        major:{pattern_primario:"mastocitario",mastociti_aggregati:true,cd117_pos:true},
+        minor:{cd25_aberrante:true},
+        note:"Aggregati ≥15 mastociti. CD117+ (c-kit), TRIPTASI+. CD25/CD2 ABERRANTE = sospetto sistemico. Giemsa metacromasia.",
+        color:["Giemsa/Toluidina blu","CD117","Triptasi","CD25"],ihc:"CD117",
+        bib:{autori:"Valent P",titolo:"Mastocytosis WHO",riv:"Blood",anno:2017,pmid:"28053105"}
+    }
+};
+
+const Engine={
+    evalFlag(f,d){
+        const chk={
+            microascessi_munro:()=>d.microascessi_munro,
+            corpi_civatte:()=>d.corpi_civatte,
+            eosinofili_marcati_edema:()=>d.eosinofili==="abbondanti"&&d.edema_dermico==="marcato",
+            palisading_necrosi_mucina:()=>d.palisading_necrosi_mucina,
+            epidermotropismo_alone:()=>d.epidermotropismo==="presente"&&d.alone_chiaro,
+            acantolisi_bolloso:()=>d.acantolisi&&d.bolle_intraepidermiche,
+            bolle_subepidermiche_eosinofili:()=>d.bolle_subepidermiche&&["presenti","abbondanti"].includes(d.eosinofili),
+            flame_figures_eosinofili:()=>d.flame_figures&&d.eosinofili==="abbondanti",
+            wedge_eosinofili_profondo:()=>d.infiltrato_wedge_shaped&&d.eosinofili==="abbondanti",
+            neutrofili_paracheratosi_psoriasi:()=>d.neutrofili_in_paracheratosi&&d.paracheratosi!=="assente",
+            granuli_grossolani_lsc:()=>d.granuli_cheratoialina==="grossolani"&&d.acantosi!=="assente",
+            saw_toothing_civatte:()=>d.saw_toothing&&d.corpi_civatte,
+            plasmacellule_psoriasiforme:()=>["presenti","abbondanti"].includes(d.plasmacellule)&&d.pattern_primario==="psoriasiforme",
+            granulomi_miescher_en:()=>d.granulomi_miescher&&d.pattern_primario==="panniculitico",
+            emofagocitosi_lobulare:()=>d.emofagocitosi&&d.panniculite_tipo==="lobulare",
+            // v1.9 nuovi
+            ghost_cells_panniculite:()=>d.ghost_cells&&d.pattern_primario==="panniculitico",
+            trombi_no_lcv:()=>d.trombi_fibrina&&!d.leucocitoclasia,
+            mxa_cd123_lupus:()=>d.mxa_positivo||d.cd123_clusters,
+            mastociti_cd25:()=>d.mastociti_aggregati&&d.cd25_aberrante,
+            paracheratosi_mounds_manicotto:()=>d.paracheratosi_mounds&&d.infiltrato_manicotto
         };
-        const CONTACT_EMAIL = 'critto@gmail.com';
-        const CONTACT_NAME = 'kc8';
-        const DB_NAME = 'AnagrammiBEI';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'data';
-        
-        const VOWELS = 'aeiouàèéìòù';
-        const CONSONANTS = 'bcdfghjklmnpqrstvwxyz';
-        
-        let db = null, dictIndex = null, wordSet = null, wordList = null, customWords = null, removedWords = null;
-        let dictSize = 0, currentDict = null, selectedWord = null, longPressTimer = null;
-        let currentTab = 'anagrammi';
-        
-        document.addEventListener('DOMContentLoaded', init);
-        document.addEventListener('click', hideContextMenu);
-        
-        async function init() {
-            try {
-                db = await openDB();
-                const saved = await dbGet('currentDict');
-                if (saved) await loadDict(saved, true);
-            } catch (err) { console.error('Init:', err); }
+        return chk[f]?chk[f]():false;
+    },
+    calcScore(c,exp,val,w){
+        if(Array.isArray(exp))return exp.includes(val)?w:0;
+        if(typeof exp==='boolean')return val===exp?w:0;
+        return val===exp?w:0;
+    },
+    scorePat(k,p,d,excl){
+        let s=0,m=0;
+        Object.entries(p.major).forEach(([c,v])=>{m+=SC.MAJOR;s+=this.calcScore(c,v,d[c],SC.MAJOR);});
+        if(p.minor)Object.entries(p.minor).forEach(([c,v])=>{m+=SC.MINOR;s+=this.calcScore(c,v,d[c],SC.MINOR);});
+        const pct=m>0?Math.round((s/m)*100):0;
+        return{pct:excl?Math.max(SC.MIN_EXCL,pct-SC.RED_PENALTY):pct,excl};
+    },
+    calc(d){
+        const flags=RED_FLAGS.filter(rf=>this.evalFlag(rf.flag,d));
+        const scores=[];
+        Object.entries(DX).forEach(([k,p])=>{
+            const excl=flags.some(rf=>rf.escludi.includes(k));
+            const{pct}=this.scorePat(k,p,d,excl);
+            scores.push({key:k,...p,pct,excl});
+        });
+        scores.sort((a,b)=>b.pct-a.pct);
+        const high=scores.filter(x=>x.pct>=50);
+        const low=scores.filter(x=>x.pct>=30&&x.pct<50).slice(0,3);
+        const hints=this.hints(d);
+        return{diagnoses:high,lowConf:low,flags,hints};
+    },
+    hints(d){
+        const p=d.pattern_primario;
+        const H={
+            spongotico:{gen:"Spongotico aspecifico",escl:["Dermatofitosi (PAS)","MF (epidermotropismo senza spongiosi?)"],cons:["Eczema NOS","ACD vs ICD","Pitiriasi rosea"],col:["PAS","Sierologia lue"]},
+            psoriasiforme:{gen:"Psoriasiforme aspecifico",escl:["Tinea (PAS)","Sifilide (plasmacellule?)"],cons:["Psoriasi iniziale","Dermatite seborroica"],col:["PAS","Sierologia lue"]},
+            interfaccia_lichenoide:{gen:"Lichenoide",escl:["GVHD","Drug lichenoide"],cons:["Lichen planus","Lichenoid keratosis"],col:["IF se lupus"]},
+            interfaccia_vacuolare:{gen:"Vacuolare",escl:["EM/TEN","Drug"],cons:["Lupus (MxA+)","Dermatomiosite (MxA+, mucina)"],col:["IF","Alcian blue","MxA"]},
+            granulomatoso:{gen:"Granulomatoso",escl:["TB/funghi","Corpo estraneo"],cons:["Sarcoidosi","GA"],col:["ZN","PAS","Polarizzazione"]},
+            granulomatoso_palizzata:{gen:"Granulomatoso palizzata",escl:["Infezione"],cons:["GA (mucina)","Necrobiosi lipoidica (sandwich)","Nodulo reumatoide (fibrina)"],col:["Alcian blue","PAS"]},
+            vasculitico:{gen:"Vasculitico",escl:["Vasculopatia (no leucocitoclasia)"],cons:["LCV","Vasculite IgA"],col:["IF per Ig"]},
+            vasculopatico:{gen:"Vasculopatico",escl:["Vasculite vera"],cons:["Livedoide","Coagulopatia"],col:["Perls","Coagulazione"]},
+            panniculitico:{gen:"Panniculitico",escl:["SPTCL (atipici+emofagocitosi)","Pancreatica (ghost cells)"],cons:["EN (settale)","Lupus panniculitis (lobulare, follicoli)"],col:["IHC T se linfoma","ZN"]},
+            mastocitario:{gen:"Mastocitario",escl:["Istiocitoma"],cons:["Mastocitosi cutanea","Urticaria pigmentosa"],col:["Giemsa","CD117","Triptasi","CD25"]}
+        };
+        return H[p]?[H[p]]:[];
+    },
+    needsIHCPanel(dx){
+        const pso=dx.find(x=>x.key==='psoriasi_vulgaris');
+        const spong=dx.find(x=>['dermatite_allergica_contatto','dermatite_atopica_acuta','lichen_simplex_chronicus'].includes(x.key));
+        if(!pso||!spong)return false;
+        return Math.abs(pso.pct-spong.pct)<20&&pso.pct>=50&&spong.pct>=50;
+    }
+};
+
+const useForm=(init=1)=>{const[s,setS]=useState(init);return{step:s,next:useCallback(()=>setS(x=>x+1),[]),prev:useCallback(()=>setS(x=>x-1),[]),reset:useCallback(()=>setS(init),[init])};};
+const useData=()=>{const[d,setD]=useState(INIT);return{data:d,upd:useCallback((f,v)=>setD(p=>({...p,[f]:v})),[]),reset:useCallback(()=>setD(INIT),[])};};
+
+const Sel=memo(({label,value,onChange,opts})=>(
+    <div><label className="block font-semibold mb-2">{label}</label>
+    <select value={value} onChange={e=>onChange(e.target.value)}><option value="">Seleziona...</option>{opts.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+));
+
+const Chk=memo(({label,checked,onChange,variant="default"})=>{
+    const col={default:"border-slate-200 hover:bg-slate-50",warning:"border-amber-200 hover:bg-amber-50",danger:"border-red-300 hover:bg-red-50",eosinophil:"border-orange-200 hover:bg-orange-50",morpho:"border-indigo-300 hover:bg-indigo-50",teal:"border-teal-300 hover:bg-teal-50"};
+    return(<label className={`flex items-center p-3 border-2 rounded-lg cursor-pointer ${col[variant]}`}><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)} className="mr-3"/><span className={variant==="danger"?"font-semibold":""}>{label}</span></label>);
+});
+
+const Radio=memo(({opt,sel,onSel})=>(
+    <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer ${sel?'border-blue-600 bg-blue-50':'border-slate-200 hover:border-blue-300'}`}>
+    <input type="radio" value={opt.value} checked={sel} onChange={()=>onSel(opt.value)} className="mt-1 mr-3"/>
+    <div><div className="font-semibold">{opt.label}</div><div className="text-sm text-slate-600">{opt.desc}</div></div></label>
+));
+
+const Steps=memo(({cur})=>(
+    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <div className="flex items-center justify-between mb-2">{[1,2,3,4].map(s=>(
+        <div key={s} className="flex items-center flex-1">
+        <div className={`w-10 h-10 rounded-full flex items-center font-bold ${cur>=s?'bg-blue-600 text-white':'bg-slate-200 text-slate-600'}`} style={{justifyContent:'center'}}>{s}</div>
+        {s<4&&<div className={`flex-1 h-1 mx-2 ${cur>s?'bg-blue-600':'bg-slate-200'}`}/>}</div>
+    ))}</div>
+    <div className="flex justify-between text-xs text-slate-600 mt-2"><span>Pattern</span><span>Epidermide</span><span>Infiltrato</span><span>Finalizza</span></div></div>
+));
+
+const Nav=memo(({onBack,onNext,canNext=true,nextLbl="Avanti →"})=>(
+    <div className="flex gap-4 mt-6">
+    {onBack&&<button onClick={onBack} className="flex-1 bg-slate-200 py-3 rounded-lg font-semibold hover:bg-slate-300">← Indietro</button>}
+    <button onClick={onNext} disabled={!canNext} className={`flex-1 py-3 rounded-lg font-semibold ${nextLbl.includes('Genera')?'bg-green-600 hover:bg-green-700':'bg-blue-600 hover:bg-blue-700'} text-white`} style={!canNext?{opacity:0.5,cursor:'not-allowed'}:{}}>{nextLbl}</button></div>
+));
+
+const IHCBox=memo(({ihcKey})=>{
+    if(!ihcKey||!IHC_PERF[ihcKey])return null;
+    const d=IHC_PERF[ihcKey];
+    return(<div className="mt-2 p-2 bg-indigo-50 border border-indigo-200 rounded text-xs"><p className="font-semibold text-indigo-800">📊 {d.test}</p><p className="text-indigo-700">Sens: {d.sens}% | Spec: {d.spec}%</p></div>);
+});
+
+const IHCPanel=memo(()=>{
+    const[exp,setExp]=useState(true);
+    return(
+    <div className="mb-6 p-4 bg-indigo-50 border-2 border-indigo-500 rounded-lg">
+    <button onClick={()=>setExp(!exp)} className="flex items-center justify-between w-full text-left">
+    <h3 className="text-lg font-bold text-indigo-900">🔬 DD: Psoriasi vs Spongotico</h3><span className="text-indigo-600">{exp?'▼':'▶'}</span></button>
+    {exp&&(<div className="mt-4"><p className="text-sm text-indigo-800 mb-3">Pannello IHC 2024-2025:</p>
+    <table className="text-sm"><thead><tr className="bg-indigo-100"><th>Marcatore</th><th>Psoriasi</th><th>Spongotico</th><th>Note</th></tr></thead>
+    <tbody>{IHC_PSO_SPONG.marcatori.map((m,i)=>(<tr key={i} className={i%2===0?'bg-white':'bg-indigo-50'}><td className="font-semibold text-indigo-800">{m.nome}</td><td className="text-green-700">{m.pso}</td><td className="text-amber-700">{m.spong}</td><td className="text-xs text-slate-600 italic">{m.note}</td></tr>))}</tbody></table>
+    <p className="text-xs text-indigo-700 mt-3 italic">Fonte: {IHC_PSO_SPONG.fonte}</p></div>)}</div>);
+});
+
+const Bib=memo(({b})=>{
+    const[exp,setExp]=useState(false);
+    if(!b)return null;
+    return(<div className="mt-3 border-t border-slate-200 pt-3">
+    <button onClick={()=>setExp(!exp)} className="flex items-center justify-between w-full text-left p-2 bg-slate-50 rounded hover:bg-slate-100">
+    <span className="text-sm font-semibold text-slate-700">📚 Bibliografia</span><span className="text-slate-500">{exp?'▼':'▶'}</span></button>
+    {exp&&(<div className="mt-2 p-3 bg-white border border-slate-200 rounded text-xs">
+    <p className="text-slate-700">{b.autori}. "{b.titolo}". {b.riv} ({b.anno}).</p>
+    {b.pmid&&<a href={`https://pubmed.ncbi.nlm.nih.gov/${b.pmid}`} target="_blank" className="text-blue-600 hover:underline">PMID: {b.pmid}</a>}</div>)}</div>);
+});
+
+const DxCard=memo(({dx,idx})=>{
+    const isLymph=dx.cat.includes('Linfoma');
+    const isEos=dx.cat==='Eosinofilo';
+    const isPann=dx.cat.includes('Panniculite');
+    const bg=isLymph?'bg-red-50 border-red-500':isEos?'bg-orange-50 border-orange-500':isPann?'bg-teal-50 border-teal-500':'bg-blue-50 border-blue-500';
+    return(<div className={`${bg} border-2 rounded-lg p-4 mb-4`}>
+    <div className="flex justify-between items-center mb-2"><div><span className="px-2 py-1 bg-white rounded text-sm font-bold">#{idx+1}</span><h3 className="text-xl font-bold mt-1">{dx.nome}</h3><p className="text-sm text-slate-600">{dx.cat}</p></div>
+    <div className="text-3xl font-bold text-blue-600 ml-4">{dx.pct}%</div></div>
+    <p className="text-sm mb-3 bg-white rounded p-3">{dx.note}</p>
+    {dx.color&&dx.color.length>0&&(<div className={`rounded p-3 mb-2 ${isLymph?'bg-red-100':isEos?'bg-orange-100':isPann?'bg-teal-100':'bg-amber-50'}`}>
+    <p className="text-sm font-semibold mb-1">🔬 {isLymph?'IHC OBBLIGATORIA':'Colorazioni'}:</p>
+    <ul className="text-sm space-y-1">{dx.color.map((c,i)=><li key={i}>• {c}</li>)}</ul></div>)}
+    {dx.ihc&&<IHCBox ihcKey={dx.ihc}/>}
+    <Bib b={dx.bib}/></div>);
+});
+
+const LowCard=memo(({dx})=>(
+    <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 bg-slate-50">
+    <div className="flex justify-between items-center mb-2"><h4 className="font-semibold text-slate-700">{dx.nome}</h4><span className="text-lg font-bold text-slate-500">{dx.pct}%</span></div>
+    <p className="text-xs text-slate-600">{dx.note}</p></div>
+));
+
+const HintsBox=memo(({hints})=>{
+    if(!hints||hints.length===0)return null;
+    const h=hints[0];
+    return(<div className="mb-6 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+    <h3 className="text-lg font-bold text-blue-900 mb-3">🧭 {h.gen}</h3>
+    <div className="grid grid-cols-2 gap-4">
+    <div><p className="text-sm font-semibold text-red-700 mb-1">❌ Escludere:</p><ul className="text-sm text-slate-700">{h.escl.map((e,i)=><li key={i}>• {e}</li>)}</ul></div>
+    <div><p className="text-sm font-semibold text-green-700 mb-1">✓ Considerare:</p><ul className="text-sm text-slate-700">{h.cons.map((c,i)=><li key={i}>• {c}</li>)}</ul></div></div>
+    {h.col&&h.col.length>0&&<div className="bg-white rounded p-2 mt-3"><p className="text-sm"><strong>🔬 Colorazioni:</strong> {h.col.join(', ')}</p></div>}</div>);
+});
+
+const Step1=memo(({data,upd,onNext})=>(
+    <div><h2 className="text-2xl font-bold mb-4">Pattern Architetturale</h2>
+    <div className="space-y-3">{PATTERNS.map(o=><Radio key={o.value} opt={o} sel={data.pattern_primario===o.value} onSel={v=>upd('pattern_primario',v)}/>)}</div>
+    {data.pattern_primario==='panniculitico'&&(
+    <div className="mt-4 p-4 bg-teal-50 border-2 border-teal-300 rounded-lg">
+    <h3 className="font-bold text-teal-800 mb-3">🔍 Tipo Panniculite</h3>
+    <Sel label="Localizzazione" value={data.panniculite_tipo} onChange={v=>upd('panniculite_tipo',v)} opts={[{value:'settale',label:'Settale (setti) → EN'},{value:'lobulare',label:'Lobulare (lobuli) → Lupus, SPTCL, Pancreatica'}]}/>
+    <div className="space-y-2 mt-3">
+    <Chk label="Vasculite presente → Er. indurato Bazin" checked={data.panniculite_vasculite} onChange={v=>upd('panniculite_vasculite',v)} variant="teal"/>
+    <Chk label="⚠️ Ghost cells (adipociti fantasma) → PANCREATICA!" checked={data.ghost_cells} onChange={v=>upd('ghost_cells',v)} variant="danger"/>
+    <Chk label="Follicoli linfoidi con centri germinativi → Lupus" checked={data.follicoli_germinativi} onChange={v=>upd('follicoli_germinativi',v)} variant="teal"/></div></div>)}
+    <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+    <h3 className="font-bold text-blue-800 mb-3">⏱️ Fase della Lesione</h3>
+    <Sel label="Fase" value={data.fase_lesione} onChange={v=>upd('fase_lesione',v)} opts={[{value:'acuta',label:'Acuta (ore-giorni): spongiosi massiva, vescicolazione'},{value:'subacuta',label:'Subacuta (giorni-settimane): spongiosi moderata, paracheratosi'},{value:'cronica',label:'Cronica (settimane-mesi): acantosi, ipergranulosi, fibrosi'}]}/></div>
+    <Nav onNext={onNext} canNext={!!data.pattern_primario}/></div>
+));
+
+const Step2=memo(({data,upd,onBack,onNext})=>(
+    <div><h2 className="text-2xl font-bold mb-4">Epidermide</h2>
+    <div className="space-y-4">
+    <Sel label="Spongiosi" value={data.spongiosi} onChange={v=>upd('spongiosi',v)} opts={[{value:'assente',label:'Assente'},{value:'lieve',label:'Lieve'},{value:'moderata',label:'Moderata'},{value:'marcata',label:'Marcata'}]}/>
+    <Sel label="Esocitosi" value={data.esocitosi} onChange={v=>upd('esocitosi',v)} opts={[{value:'assente',label:'Assente'},{value:'lieve',label:'Lieve'},{value:'presente',label:'Presente'},{value:'marcata',label:'Marcata'}]}/>
+    <Sel label="Acantosi" value={data.acantosi} onChange={v=>upd('acantosi',v)} opts={[{value:'assente',label:'Assente'},{value:'lieve',label:'Lieve'},{value:'moderata',label:'Moderata'},{value:'marcata',label:'Marcata'}]}/>
+    <Sel label="Paracheratosi" value={data.paracheratosi} onChange={v=>upd('paracheratosi',v)} opts={[{value:'assente',label:'Assente'},{value:'focale',label:'Focale'},{value:'moderata',label:'Moderata'},{value:'marcata',label:'Marcata'}]}/>
+    <div className="grid grid-cols-2 gap-4">
+    <Sel label="Ipergranulosi" value={data.ipergranulosi} onChange={v=>upd('ipergranulosi',v)} opts={[{value:'no',label:'No'},{value:'si',label:'Sì'}]}/>
+    <Sel label="Ipogranulosi" value={data.ipogranulosi} onChange={v=>upd('ipogranulosi',v)} opts={[{value:'no',label:'No'},{value:'si',label:'Sì'}]}/></div>
+    <Sel label="Vacuolizzazione basale" value={data.vacuolizzazione_basale} onChange={v=>upd('vacuolizzazione_basale',v)} opts={[{value:'assente',label:'Assente'},{value:'presente',label:'Presente'},{value:'marcata',label:'Marcata'}]}/>
+    <Sel label="Necrosi cheratinociti" value={data.necrosi_keratinociti} onChange={v=>upd('necrosi_keratinociti',v)} opts={[{value:'assente',label:'Assente'},{value:'presente',label:'Presente'},{value:'marcata',label:'Marcata'}]}/>
+    <div className="p-4 bg-violet-50 border-2 border-violet-300 rounded-lg mt-4">
+    <h3 className="font-bold text-violet-800 mb-2">🔍 Clues Morfologici</h3>
+    <div className="space-y-3">
+    <Chk label="Neutrofili paracheratosi (Segno Ñ) → Psoriasi" checked={data.neutrofili_in_paracheratosi} onChange={v=>upd('neutrofili_in_paracheratosi',v)} variant="morpho"/>
+    <Chk label="Paracheratosi 'a tumuli' (mounds) → Pitiriasi rosea" checked={data.paracheratosi_mounds} onChange={v=>upd('paracheratosi_mounds',v)} variant="morpho"/>
+    <Chk label="Necrosi cheratinociti SUPERFICIALI → Irritativa (vs ACD)" checked={data.necrosi_cheratino_superficiale} onChange={v=>upd('necrosi_cheratino_superficiale',v)} variant="morpho"/>
+    <Chk label="Assottigliamento soprapapillare → Psoriasi" checked={data.assottigliamento_soprapapillare} onChange={v=>upd('assottigliamento_soprapapillare',v)} variant="morpho"/>
+    <Chk label="Capillari dilatati papille → Psoriasi" checked={data.capillari_dilatati_papille} onChange={v=>upd('capillari_dilatati_papille',v)} variant="morpho"/>
+    <Chk label="Saw-toothing (dente sega) → LP" checked={data.saw_toothing} onChange={v=>upd('saw_toothing',v)} variant="morpho"/>
+    <Chk label="Ipergranulosi a cuneo → LP" checked={data.ipergranulosi_cuneo} onChange={v=>upd('ipergranulosi_cuneo',v)} variant="morpho"/>
+    <Chk label="Plugging follicolare → Lupus" checked={data.plugging_follicolare} onChange={v=>upd('plugging_follicolare',v)} variant="morpho"/>
+    <Sel label="Granuli cheratoialina" value={data.granuli_cheratoialina} onChange={v=>upd('granuli_cheratoialina',v)} opts={[{value:'normali',label:'Normali'},{value:'diminuiti',label:'Diminuiti → Psoriasi'},{value:'grossolani',label:'Grossolani → LSC'}]}/></div></div></div>
+    <Nav onBack={onBack} onNext={onNext}/></div>
+));
+
+const Step3=memo(({data,upd,onBack,onNext})=>(
+    <div><h2 className="text-2xl font-bold mb-4">Derma e Infiltrato</h2>
+    <div className="space-y-4">
+    <Sel label="Distribuzione" value={data.infiltrato_distribuzione} onChange={v=>upd('infiltrato_distribuzione',v)} opts={[{value:'perivascolare_superficiale',label:'Perivascolare sup'},{value:'perivascolare_profondo',label:'Perivascolare prof'},{value:'banda_lichenoide',label:'Banda lichenoide'},{value:'interstiziale',label:'Interstiziale'},{value:'perivascolare_perianessiale',label:'Perivascolare+perianessiale'},{value:'derma_medio_profondo',label:'Derma medio-prof'}]}/>
+    <Sel label="Densità" value={data.infiltrato_densita} onChange={v=>upd('infiltrato_densita',v)} opts={[{value:'scarso',label:'Scarso'},{value:'moderato',label:'Moderato'},{value:'denso',label:'Denso'}]}/>
+    <Sel label="Eosinofili" value={data.eosinofili} onChange={v=>upd('eosinofili',v)} opts={[{value:'assenti',label:'Assenti'},{value:'rari',label:'Rari'},{value:'presenti',label:'Presenti'},{value:'abbondanti',label:'Abbondanti'}]}/>
+    <Sel label="Neutrofili" value={data.neutrofili} onChange={v=>upd('neutrofili',v)} opts={[{value:'assenti',label:'Assenti'},{value:'rari',label:'Rari'},{value:'presenti',label:'Presenti'},{value:'abbondanti',label:'Abbondanti'}]}/>
+    <Sel label="Plasmacellule" value={data.plasmacellule} onChange={v=>upd('plasmacellule',v)} opts={[{value:'assenti',label:'Assenti'},{value:'presenti',label:'Presenti → Sifilide?'},{value:'abbondanti',label:'Abbondanti → SIFILIDE!'}]}/>
+    <Sel label="Mucina dermica" value={data.mucina_dermica} onChange={v=>upd('mucina_dermica',v)} opts={[{value:'assente',label:'Assente'},{value:'focale',label:'Focale'},{value:'abbondante',label:'Abbondante → Lupus/GA'}]}/>
+    <Sel label="Eritrociti extravasati" value={data.eritrociti_extravasati} onChange={v=>upd('eritrociti_extravasati',v)} opts={[{value:'assenti',label:'Assenti'},{value:'presenti',label:'Presenti'},{value:'abbondanti',label:'Abbondanti'}]}/>
+    <div className="p-4 bg-orange-50 border-2 border-orange-200 rounded-lg"><h3 className="font-bold text-orange-800 mb-3">🔶 Pattern Eosinofilo</h3>
+    <div className="space-y-3">
+    <Chk label="Flame figures → Wells" checked={data.flame_figures} onChange={v=>upd('flame_figures',v)} variant="eosinophil"/>
+    <Chk label="Wedge-shaped → Bite" checked={data.infiltrato_wedge_shaped} onChange={v=>upd('infiltrato_wedge_shaped',v)} variant="eosinophil"/>
+    <Chk label="Eosinofili profondi → Drug" checked={data.eosinofili_perivascolari_profondi} onChange={v=>upd('eosinofili_perivascolari_profondi',v)} variant="eosinophil"/>
+    <Chk label="Fibrosi verticale → Prurigo" checked={data.fibrosi_dermica} onChange={v=>upd('fibrosi_dermica',v)} variant="eosinophil"/>
+    <Chk label="Centrato follicoli → Follicolite eos" checked={data.infiltrato_follicolare} onChange={v=>upd('infiltrato_follicolare',v)} variant="eosinophil"/></div></div>
+    <div className="p-4 bg-cyan-50 border-2 border-cyan-200 rounded-lg"><h3 className="font-bold text-cyan-900 mb-3">🔷 Vasculite vs Vasculopatia</h3>
+    <div className="space-y-3">
+    <Chk label="Leucocitoclasia (polvere nucleare) → Vasculite vera" checked={data.leucocitoclasia} onChange={v=>upd('leucocitoclasia',v)}/>
+    <Chk label="Trombi fibrina intraluminali → Vasculopatia livedoide" checked={data.trombi_fibrina} onChange={v=>upd('trombi_fibrina',v)}/>
+    <Chk label="Depositi emosiderina (Perls+)" checked={data.depositi_emosiderina} onChange={v=>upd('depositi_emosiderina',v)}/></div></div>
+    <div className="p-4 bg-indigo-50 border-2 border-indigo-200 rounded-lg"><h3 className="font-bold text-indigo-900 mb-3">🔬 IHC Specifici (Lupus/DM)</h3>
+    <div className="space-y-3">
+    <Chk label="MxA+ (firma IFN tipo I) → Lupus/Dermatomiosite" checked={data.mxa_positivo} onChange={v=>upd('mxa_positivo',v)}/>
+    <Chk label="CD123 clusters → Lupus (vs sparso in MF)" checked={data.cd123_clusters} onChange={v=>upd('cd123_clusters',v)}/></div></div>
+    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg"><h3 className="font-bold text-red-900 mb-3">⚠️ Sospetto Linfoma/Panniculite</h3>
+    <div className="space-y-3">
+    <Sel label="Linfociti atipici" value={data.linfociti_atipici} onChange={v=>upd('linfociti_atipici',v)} opts={[{value:'assenti',label:'Assenti'},{value:'presenti',label:'Presenti'},{value:'abbondanti',label:'Abbondanti'}]}/>
+    <Sel label="Epidermotropismo" value={data.epidermotropismo} onChange={v=>upd('epidermotropismo',v)} opts={[{value:'assente',label:'Assente'},{value:'presente',label:'Presente'},{value:'marcato',label:'Marcato'}]}/>
+    <Chk label="Alone chiaro → MF" checked={data.alone_chiaro} onChange={v=>upd('alone_chiaro',v)} variant="danger"/>
+    <Chk label="Granulomi Miescher → EN" checked={data.granulomi_miescher} onChange={v=>upd('granulomi_miescher',v)} variant="danger"/>
+    <Chk label="Necrosi adipociti → SPTCL" checked={data.necrosi_adipociti} onChange={v=>upd('necrosi_adipociti',v)} variant="danger"/>
+    <Chk label="Emofagocitosi → SPTCL" checked={data.emofagocitosi} onChange={v=>upd('emofagocitosi',v)} variant="danger"/></div></div></div>
+    <Nav onBack={onBack} onNext={onNext}/></div>
+));
+
+const Step4=memo(({data,upd,onBack,onGen})=>(
+    <div><h2 className="text-2xl font-bold mb-4">Completamento</h2>
+    <div className="space-y-4">
+    <Sel label="Vasculite" value={data.vasculite} onChange={v=>upd('vasculite',v)} opts={[{value:'no',label:'No'},{value:'si',label:'Sì'}]}/>
+    <Chk label="Microascessi Munro" checked={data.microascessi_munro} onChange={v=>upd('microascessi_munro',v)}/>
+    <div><label className="block font-semibold mb-2">🚩 Red Flags - Granulomatosi Palizzata</label>
+    <div className="space-y-2">
+    <Chk label="Palisading + mucina → GA" checked={data.palisading_necrosi_mucina} onChange={v=>upd('palisading_necrosi_mucina',v)} variant="warning"/>
+    <Chk label="Necrobiosi 'a sandwich' → Necrobiosi lipoidica" checked={data.necrobiosi_sandwich} onChange={v=>upd('necrobiosi_sandwich',v)} variant="warning"/>
+    <Chk label="Fibrina centrale eosinofila → Nodulo reumatoide" checked={data.fibrina_centrale} onChange={v=>upd('fibrina_centrale',v)} variant="warning"/>
+    <Chk label="Corpi Civatte → LP" checked={data.corpi_civatte} onChange={v=>upd('corpi_civatte',v)} variant="warning"/></div></div>
+    <div><label className="block font-semibold mb-2">⚠️ Bollosi</label>
+    <div className="space-y-2">
+    <Chk label="⚠️ Acantolisi → PEMFIGO" checked={data.acantolisi} onChange={v=>upd('acantolisi',v)} variant="danger"/>
+    <Chk label="⚠️ Bolle intraepidermiche" checked={data.bolle_intraepidermiche} onChange={v=>upd('bolle_intraepidermiche',v)} variant="danger"/>
+    <Chk label="⚠️ Bolle subepidermiche → PEMFIGOIDE" checked={data.bolle_subepidermiche} onChange={v=>upd('bolle_subepidermiche',v)} variant="danger"/></div></div>
+    <div><label className="block font-semibold mb-2">🔬 Mastocitosi</label>
+    <div className="space-y-2">
+    <Chk label="Mastociti aggregati (≥15)" checked={data.mastociti_aggregati} onChange={v=>upd('mastociti_aggregati',v)}/>
+    <Chk label="CD117+ (c-kit)" checked={data.cd117_pos} onChange={v=>upd('cd117_pos',v)}/>
+    <Chk label="CD25 aberrante → Sospetto sistemico!" checked={data.cd25_aberrante} onChange={v=>upd('cd25_aberrante',v)} variant="danger"/></div></div>
+    <Sel label="Edema dermico" value={data.edema_dermico} onChange={v=>upd('edema_dermico',v)} opts={[{value:'assente',label:'Assente'},{value:'lieve',label:'Lieve'},{value:'moderato',label:'Moderato'},{value:'marcato',label:'Marcato'}]}/>
+    <Chk label="Infiltrato perianessiale profondo → Lupus" checked={data.infiltrato_perianessiale_profondo} onChange={v=>upd('infiltrato_perianessiale_profondo',v)}/>
+    <Chk label="Infiltrato 'a manicotto' → Pitiriasi rosea" checked={data.infiltrato_manicotto} onChange={v=>upd('infiltrato_manicotto',v)}/>
+    <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg"><h3 className="font-bold text-blue-900 mb-3">📋 Contesto</h3>
+    <Chk label="Storia farmaci" checked={data.storia_farmaci} onChange={v=>upd('storia_farmaci',v)}/>
+    <Chk label="Sospetta puntura" checked={data.storia_puntura_insetto} onChange={v=>upd('storia_puntura_insetto',v)}/></div></div>
+    <Nav onBack={onBack} onNext={onGen} nextLabel="🔬 Genera Diagnosi"/></div>
+));
+
+const Results=memo(({dx,lowConf,flags,hints,showIHC,onMod,onExp})=>{
+    const hasLymph=dx.some(d=>d.cat.includes('Linfoma'));
+    const hasEos=dx.some(d=>d.cat==='Eosinofilo');
+    const hasPann=dx.some(d=>d.cat.includes('Panniculite'));
+    const hasHigh=dx.length>0;
+    return(<div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="flex items-center justify-between mb-6"><h2 className="text-2xl font-bold">📋 Diagnosi Differenziale</h2>
+    <div className="flex gap-2"><button onClick={onExp} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">💾 Esporta</button>
+    <button onClick={onMod} className="px-4 py-2 bg-slate-200 rounded-lg hover:bg-slate-300 text-sm font-semibold">← Modifica</button></div></div>
+    {showIHC&&<IHCPanel/>}
+    {hasLymph&&<div className="mb-6 p-4 bg-red-50 border-2 border-red-500 rounded-lg"><h3 className="text-lg font-bold text-red-900 mb-2">⚠️ SOSPETTO LINFOMA</h3><p className="text-sm text-red-800">IHC: CD3,CD4,CD8,CD7,TOX | PCR TCR</p></div>}
+    {hasPann&&<div className="mb-6 p-4 bg-teal-50 border-2 border-teal-500 rounded-lg"><h3 className="text-lg font-bold text-teal-900 mb-2">🔍 PATTERN PANNICULITICO</h3><p className="text-sm text-teal-800">Settale (EN) vs Lobulare (Lupus, SPTCL). Se linfociti atipici → IHC T!</p></div>}
+    {hasEos&&<div className="mb-6 p-4 bg-orange-50 border-2 border-orange-500 rounded-lg"><h3 className="text-lg font-bold text-orange-900 mb-2">🔶 PATTERN EOSINOFILO</h3><p className="text-sm text-orange-800">Farmaci? Punture? Flame figures = Wells.</p></div>}
+    {flags.length>0&&<div className="mb-6 p-4 bg-amber-50 border-2 border-amber-500 rounded-lg"><h3 className="text-lg font-bold text-amber-900 mb-2">🚩 RED FLAGS</h3><div className="text-sm text-amber-800 space-y-1">{flags.map((f,i)=><p key={i}>• <strong>{f.diagnosi}</strong></p>)}</div></div>}
+    {hasHigh&&<div className="space-y-4 mb-6">{dx.map((d,i)=><DxCard key={d.key} dx={d} idx={i}/>)}</div>}
+    {!hasHigh&&(<div className="space-y-4"><HintsBox hints={hints}/>
+    {lowConf&&lowConf.length>0&&(<div className="mb-6"><h3 className="text-lg font-semibold text-slate-700 mb-3">🤔 Bassa confidenza</h3><div className="space-y-3">{lowConf.map(d=><LowCard key={d.key} dx={d}/>)}</div></div>)}
+    {(!lowConf||lowConf.length===0)&&(!hints||hints.length===0)&&(<div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-lg text-center"><p className="font-semibold text-slate-700 mb-2">🔬 Pattern non diagnostico</p><p className="text-sm text-slate-600">Considera livelli aggiuntivi, correlazione clinica, nuova biopsia.</p></div>)}</div>)}
+    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg"><p className="text-sm text-blue-900"><strong>💡</strong> Diagnosi pattern-based. Correlazione clinico-patologica sempre necessaria.</p></div></div>);
+});
+
+const App=()=>{
+    const{step,next,prev,reset:resetStep}=useForm(1);
+    const{data,upd,reset:resetData}=useData();
+    const[showRes,setShowRes]=useState(false);
+    const[res,setRes]=useState({diagnoses:[],flags:[]});
+    const handleReset=useCallback(()=>{if(confirm('Reset?')){resetData();resetStep();setShowRes(false);}},[]); 
+    const handleCalc=useCallback(()=>{setRes(Engine.calc(data));setShowRes(true);},[data]);
+    const showIHC=useMemo(()=>Engine.needsIHCPanel(res.diagnoses),[res.diagnoses]);
+    const handleExp=useCallback(()=>{
+        let c=`REFERTO DERMATOPATOLOGICO - DermPath v1.9\nData: ${new Date().toLocaleDateString('it-IT')}\nPattern: ${data.pattern_primario}`;
+        if(data.panniculite_tipo)c+=` (${data.panniculite_tipo})`;
+        c+='\n';
+        if(res.diagnoses&&res.diagnoses.length>0)c+=`\nDIAGNOSI:\n${res.diagnoses.map((d,i)=>`${i+1}. ${d.nome} (${d.pct}%)\n   ${d.note}`).join('\n\n')}`;
+        if(res.lowConf&&res.lowConf.length>0&&(!res.diagnoses||res.diagnoses.length===0))c+=`\nDA CONSIDERARE:\n${res.lowConf.map((d,i)=>`${i+1}. ${d.nome} (${d.pct}%)`).join('\n')}`;
+        if(showIHC)c+=`\n\n⚠️ DD EQUIVOCA - Pannello IHC: Ki-67, p53, CD34, IL-36γ`;
+        c+=`\n\n---\nDermPath v1.9 - Correlazione clinico-patologica necessaria.`;
+        const b=new Blob([c],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`referto_${Date.now()}.txt`;a.click();
+    },[data,res,showIHC]);
+    const renderStep=useMemo(()=>{
+        switch(step){
+            case 1:return<Step1 data={data} upd={upd} onNext={next}/>;
+            case 2:return<Step2 data={data} upd={upd} onBack={prev} onNext={next}/>;
+            case 3:return<Step3 data={data} upd={upd} onBack={prev} onNext={next}/>;
+            case 4:return<Step4 data={data} upd={upd} onBack={prev} onGen={handleCalc}/>;
+            default:return null;
         }
-        
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.tab:nth-child(${tab === 'anagrammi' ? 1 : 2})`).classList.add('active');
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            document.getElementById('resultsCard').classList.add('hidden');
-        }
-        
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open(DB_NAME, DB_VERSION);
-                req.onerror = () => reject(req.error);
-                req.onsuccess = () => resolve(req.result);
-                req.onupgradeneeded = (e) => {
-                    if (!e.target.result.objectStoreNames.contains(STORE_NAME))
-                        e.target.result.createObjectStore(STORE_NAME);
-                };
-            });
-        }
-        
-        function dbGet(key) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readonly');
-                const req = tx.objectStore(STORE_NAME).get(key);
-                req.onerror = () => reject(req.error);
-                req.onsuccess = () => resolve(req.result);
-            });
-        }
-        
-        function dbPut(key, value) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const req = tx.objectStore(STORE_NAME).put(value, key);
-                req.onerror = () => reject(req.error);
-                req.onsuccess = () => resolve();
-            });
-        }
-        
-        async function loadDict(type, fromCache = false) {
-            currentDict = type;
-            document.querySelectorAll('.dict-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(type));
-            });
-            
-            customWords = new Set(await dbGet(`custom_${type}`) || []);
-            removedWords = new Set(await dbGet(`removed_${type}`) || []);
-            
-            const cached = await dbGet(`dict_${type}`);
-            if (cached && fromCache) {
-                dictIndex = new Map(cached.index);
-                wordSet = new Set(cached.words);
-                wordList = cached.words;
-                dictSize = cached.size;
-                finishLoad();
-            } else {
-                await downloadDict(type);
-            }
-        }
-        
-        async function downloadDict(type) {
-            const loader = document.getElementById('loadingIndicator');
-            loader.classList.remove('hidden');
-            updateLoadingText('Download vocabolario...');
-            updateProgress(0);
-            
-            try {
-                const res = await fetch(DICT_FILES[type]);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                
-                const text = await res.text();
-                updateLoadingText('Elaborazione...');
-                updateProgress(50);
-                
-                await processWords(text);
-                
-                for (const w of customWords) addWordToIndex(w);
-                for (const w of removedWords) removeWordFromIndex(w);
-                
-                wordList = Array.from(wordSet);
-                
-                await dbPut(`dict_${type}`, { index: Array.from(dictIndex.entries()), words: wordList, size: dictSize });
-                await dbPut('currentDict', type);
-                
-                loader.classList.add('hidden');
-                finishLoad();
-            } catch (err) {
-                loader.classList.add('hidden');
-                showError(`Errore: ${err.message}. Verifica che i file dizionario siano nella stessa cartella.`);
-            }
-        }
-        
-        async function processWords(text) {
-            const lines = text.split(/[\r\n]+/);
-            dictIndex = new Map();
-            wordSet = new Set();
-            dictSize = 0;
-            
-            for (let i = 0; i < lines.length; i += 10000) {
-                const batch = lines.slice(i, Math.min(i + 10000, lines.length));
-                for (const line of batch) {
-                    const word = line.trim().toLowerCase();
-                    if (isValidWord(word)) addWordToIndex(word);
-                }
-                updateProgress(50 + (Math.min(i + 10000, lines.length) / lines.length) * 50);
-                await new Promise(r => setTimeout(r, 0));
-            }
-        }
-        
-        function finishLoad() {
-            document.getElementById('dictSelector').classList.add('hidden');
-            document.getElementById('dictOptions').classList.remove('hidden');
-            document.getElementById('inputWord').disabled = false;
-            document.getElementById('inputPattern').disabled = false;
-            document.getElementById('btnSearch').disabled = false;
-            document.getElementById('btnPattern').disabled = false;
-            document.getElementById('btnAddWord').disabled = false;
-            document.getElementById('inputWord').focus();
-            
-            const label = currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo';
-            updateStatus('loaded', `✅ ${label} (${formatNumber(dictSize)} parole)`);
-            updateCustomWordsCount();
-        }
-        
-        function switchDict() {
-            document.getElementById('dictSelector').classList.remove('hidden');
-            document.getElementById('dictOptions').classList.add('hidden');
-            document.getElementById('resultsCard').classList.add('hidden');
-            document.getElementById('inputWord').disabled = true;
-            document.getElementById('inputPattern').disabled = true;
-            document.getElementById('btnSearch').disabled = true;
-            document.getElementById('btnPattern').disabled = true;
-            updateStatus('', '⏳ Seleziona un vocabolario...');
-        }
-        
-        function isValidWord(word) { return word && word.length >= 2 && /^[a-zàèéìòùâêîôûäëïöüç'-]+$/i.test(word); }
-        
-        function addWordToIndex(word) {
-            const clean = word.replace(/['-]/g, '');
-            if (clean.length < 2) return false;
-            const sig = getSignature(clean);
-            if (!dictIndex.has(sig)) dictIndex.set(sig, []);
-            if (!wordSet.has(word)) {
-                dictIndex.get(sig).push(word);
-                wordSet.add(word);
-                dictSize++;
-                return true;
-            }
-            return false;
-        }
-        
-        function removeWordFromIndex(word) {
-            if (!wordSet.has(word)) return false;
-            const sig = getSignature(word.replace(/['-]/g, ''));
-            wordSet.delete(word);
-            dictSize--;
-            if (dictIndex.has(sig)) {
-                const words = dictIndex.get(sig).filter(w => w !== word);
-                if (words.length === 0) dictIndex.delete(sig);
-                else dictIndex.set(sig, words);
-            }
-            return true;
-        }
-        
-        async function saveCustomData() {
-            wordList = Array.from(wordSet);
-            await dbPut(`custom_${currentDict}`, Array.from(customWords));
-            await dbPut(`removed_${currentDict}`, Array.from(removedWords));
-            await dbPut(`dict_${currentDict}`, { index: Array.from(dictIndex.entries()), words: wordList, size: dictSize });
-        }
-        
-        // Pattern search
-        function patternToRegex(pattern) {
-            let regex = '^';
-            for (const char of pattern.toLowerCase()) {
-                if (char === '.' || char === '?') {
-                    regex += '[a-zàèéìòùâêîôûäëïöüç]';
-                } else if (char === '+') {
-                    regex += `[${VOWELS}]`;
-                } else if (char === '-') {
-                    regex += `[${CONSONANTS}]`;
-                } else if (char === '*') {
-                    regex += '[a-zàèéìòùâêîôûäëïöüç]*';
-                } else if (/[a-zàèéìòùâêîôûäëïöüç]/.test(char)) {
-                    regex += char;
-                }
-            }
-            regex += '$';
-            return new RegExp(regex, 'i');
-        }
-        
-        function searchPattern() {
-            const pattern = document.getElementById('inputPattern').value.trim();
-            if (!pattern) return;
-            
-            const minLen = parseInt(document.getElementById('selMinLenSearch').value);
-            const maxLen = parseInt(document.getElementById('selMaxLenSearch').value);
-            
-            let regex;
-            try {
-                regex = patternToRegex(pattern);
-            } catch (e) {
-                alert('Pattern non valido');
-                return;
-            }
-            
-            const results = [];
-            for (const word of wordList) {
-                if (word.length < minLen || word.length > maxLen) continue;
-                if (regex.test(word)) {
-                    results.push(word);
-                    if (results.length >= 1000) break;
-                }
-            }
-            
-            results.sort((a, b) => a.length - b.length || a.localeCompare(b));
-            displayPatternResults(pattern, results);
-        }
-        
-        function displayPatternResults(pattern, results) {
-            const container = document.getElementById('resultsContainer');
-            const card = document.getElementById('resultsCard');
-            
-            document.getElementById('resultsCount').textContent = `${results.length}${results.length >= 1000 ? '+' : ''} risultat${results.length === 1 ? 'o' : 'i'} per "${pattern}"`;
-            
-            if (results.length === 0) {
-                container.innerHTML = '<div class="no-results">Nessuna parola trovata 😕</div>';
-                card.classList.remove('hidden');
-                return;
-            }
-            
-            // Raggruppa per lunghezza
-            const byLen = {};
-            for (const w of results) {
-                const len = w.length;
-                if (!byLen[len]) byLen[len] = [];
-                byLen[len].push(w);
-            }
-            
-            const lengths = Object.keys(byLen).map(Number).sort((a, b) => a - b);
-            
-            let html = `<div class="results-section">
-                ${lengths.map(len => `
-                    <div class="length-group">
-                        <div class="length-label">${len} lettere (${byLen[len].length})</div>
-                        <div class="results-grid">${byLen[len].map(w => wordSpan(w)).join('')}</div>
-                    </div>
-                `).join('')}
-            </div>`;
-            
-            container.innerHTML = html;
-            card.classList.remove('hidden');
-        }
-        
-        // Word management
-        function showAddWordModal() {
-            document.getElementById('addWordModal').classList.remove('hidden');
-            document.getElementById('newWordInput').value = '';
-            document.getElementById('newWordInput').focus();
-        }
-        
-        function closeAddWordModal() { document.getElementById('addWordModal').classList.add('hidden'); }
-        function handleAddWordKeyUp(e) { if (e.key === 'Enter') addWord(); if (e.key === 'Escape') closeAddWordModal(); }
-        
-        async function addWord() {
-            const word = document.getElementById('newWordInput').value.trim().toLowerCase();
-            if (!word) { alert('Inserisci una parola'); return; }
-            if (!isValidWord(word)) { alert('Parola non valida'); return; }
-            if (wordSet.has(word)) { alert('Già presente'); closeAddWordModal(); return; }
-            
-            removedWords.delete(word);
-            addWordToIndex(word);
-            customWords.add(word);
-            await saveCustomData();
-            
-            closeAddWordModal();
-            updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
-            updateCustomWordsCount();
-            showSuccess(`"${word}" aggiunta!`);
-        }
-        
-        async function removeWord(word) {
-            if (!wordSet.has(word)) return;
-            removeWordFromIndex(word);
-            removedWords.add(word);
-            customWords.delete(word);
-            await saveCustomData();
-            
-            updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
-            updateCustomWordsCount();
-            showSuccess(`"${word}" rimossa`);
-            if (!document.getElementById('resultsCard').classList.contains('hidden')) {
-                if (currentTab === 'anagrammi') findAnagrams();
-                else searchPattern();
-            }
-        }
-        
-        async function restoreRemoved() {
-            if (removedWords.size === 0) { alert('Niente da ripristinare'); return; }
-            if (!confirm(`Ripristinare ${removedWords.size} parole?`)) return;
-            for (const w of removedWords) addWordToIndex(w);
-            removedWords.clear();
-            await saveCustomData();
-            updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
-            updateCustomWordsCount();
-            showSuccess('Ripristinate!');
-        }
-        
-        function updateCustomWordsCount() {
-            const el = document.getElementById('customWordsCount');
-            const parts = [];
-            if (customWords.size > 0) parts.push(`+${customWords.size} aggiunte`);
-            if (removedWords.size > 0) parts.push(`-${removedWords.size} rimosse`);
-            el.textContent = parts.length > 0 ? `📝 ${parts.join(', ')}` : '';
-        }
-        
-        // Context menu
-        function showContextMenu(e, word) {
-            e.preventDefault();
-            selectedWord = word;
-            const menu = document.getElementById('contextMenu');
-            menu.classList.remove('hidden');
-            menu.style.left = Math.min(e.clientX || 0, window.innerWidth - 160) + 'px';
-            menu.style.top = Math.min(e.clientY || 0, window.innerHeight - 100) + 'px';
-        }
-        
-        function hideContextMenu() { document.getElementById('contextMenu').classList.add('hidden'); selectedWord = null; }
-        
-        function searchSelectedWord() { 
-            if (selectedWord) { 
-                switchTab('anagrammi');
-                document.getElementById('inputWord').value = selectedWord; 
-                findAnagrams(); 
-            } 
-            hideContextMenu(); 
-        }
-        
-        function patternSelectedWord() {
-            if (selectedWord) {
-                switchTab('ricerca');
-                document.getElementById('inputPattern').value = selectedWord;
-            }
-            hideContextMenu();
-        }
-        
-        function removeSelectedWord() { if (selectedWord) removeWord(selectedWord); hideContextMenu(); }
-        function handleWordTouchStart(e, word) { longPressTimer = setTimeout(() => showContextMenu(e, word), 500); }
-        function handleWordTouchEnd() { clearTimeout(longPressTimer); }
-        
-        // Export & Suggest
-        function exportDictionary() {
-            const words = Array.from(wordSet).sort();
-            const blob = new Blob([words.join('\n')], { type: 'text/plain' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `dizionario_${currentDict}.txt`;
-            a.click();
-            showSuccess(`Esportate ${formatNumber(words.length)} parole`);
-        }
-        
-        function suggestWord() {
-            document.getElementById('suggestModal').classList.remove('hidden');
-            document.getElementById('suggestWordInput').value = '';
-            document.getElementById('suggestWordInput').focus();
-        }
-        
-        function closeSuggestModal() { document.getElementById('suggestModal').classList.add('hidden'); }
-        
-        function sendSuggestion() {
-            const word = document.getElementById('suggestWordInput').value.trim();
-            if (!word) { alert('Inserisci una parola'); return; }
-            window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Suggerimento: ${word}`)}&body=${encodeURIComponent(`Caro ${CONTACT_NAME},\n\nti suggerisco di aggiungere:\n\n${word}\n\nGrazie!`)}`;
-            closeSuggestModal();
-        }
-        
-        function closeModalOnOverlay(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden'); }
-        
-        // Anagrams
-        function getSignature(word) { return word.toLowerCase().replace(/['-]/g, '').split('').sort().join(''); }
-        
-        function findAnagrams() {
-            const input = document.getElementById('inputWord').value.trim().toLowerCase();
-            if (!input) return;
-            
-            const clean = input.replace(/[^a-zàèéìòùâêîôûäëïöüç]/gi, '');
-            if (clean.length < 2) { alert('Almeno 2 lettere'); return; }
-            
-            const minLen = parseInt(document.getElementById('selMinLen').value);
-            const multiWord = document.getElementById('chkMulti').checked;
-            const showPartial = document.getElementById('chkPartial').checked;
-            const maxWords = parseInt(document.getElementById('selMaxWords').value);
-            
-            const single = (dictIndex.get(getSignature(clean)) || []).filter(w => w.toLowerCase() !== clean);
-            let multi = multiWord && clean.length <= 15 ? findMultiWordAnagrams(clean, maxWords, minLen) : [];
-            let partial = showPartial ? findPartialAnagrams(clean, minLen) : [];
-            
-            displayAnagramResults(clean, single, multi, partial);
-        }
-        
-        function findPartialAnagrams(input, minLen) {
-            const results = [];
-            const lc = {};
-            for (const l of input) lc[l] = (lc[l] || 0) + 1;
-            
-            for (const word of wordSet) {
-                const clean = word.replace(/['-]/g, '');
-                if (clean.length >= input.length || clean.length < minLen) continue;
-                
-                const wc = {};
-                let valid = true;
-                for (const l of clean) { wc[l] = (wc[l] || 0) + 1; if (wc[l] > (lc[l] || 0)) { valid = false; break; } }
-                if (valid) results.push(word);
-            }
-            
-            results.sort((a, b) => b.length - a.length || a.localeCompare(b));
-            return results;
-        }
-        
-        function findMultiWordAnagrams(input, maxWords, minLen) {
-            const results = [], letters = input.split('').sort(), seen = new Set();
-            const candidates = findCandidates(letters, minLen);
-            
-            function search(rem, cur, depth) {
-                if (rem.length === 0 && cur.length >= 2) {
-                    const key = [...cur].sort().join(' ');
-                    if (!seen.has(key)) { seen.add(key); results.push([...cur]); }
-                    return;
-                }
-                if (depth >= maxWords || results.length >= 500) return;
-                
-                for (const word of candidates) {
-                    const wl = word.replace(/['-]/g, '').split('').sort();
-                    if (wl.length > rem.length || wl.length < minLen) continue;
-                    const newRem = trySubtract(rem, wl);
-                    if (newRem) { cur.push(word); search(newRem, cur, depth + 1); cur.pop(); }
-                }
-            }
-            
-            search(letters, [], 0);
-            return results;
-        }
-        
-        function findCandidates(letters, minLen) {
-            const candidates = [], lc = {};
-            for (const l of letters) lc[l] = (lc[l] || 0) + 1;
-            
-            for (const word of wordSet) {
-                if (word.length < minLen) continue;
-                const clean = word.replace(/['-]/g, '');
-                if (clean.length > letters.length) continue;
-                
-                const wc = {};
-                let valid = true;
-                for (const l of clean) { wc[l] = (wc[l] || 0) + 1; if (wc[l] > (lc[l] || 0)) { valid = false; break; } }
-                if (valid) candidates.push(word);
-            }
-            
-            candidates.sort((a, b) => b.length - a.length);
-            return candidates;
-        }
-        
-        function trySubtract(arr, toRemove) {
-            const result = [...arr];
-            for (const item of toRemove) { const idx = result.indexOf(item); if (idx === -1) return null; result.splice(idx, 1); }
-            return result;
-        }
-        
-        function displayAnagramResults(input, single, multi, partial) {
-            const container = document.getElementById('resultsContainer');
-            const card = document.getElementById('resultsCard');
-            const total = single.length + multi.length + partial.length;
-            
-            document.getElementById('resultsCount').textContent = `${total} risultat${total === 1 ? 'o' : 'i'} per "${input}"`;
-            
-            let html = '';
-            
-            // Anagrammi perfetti - sempre visibile
-            html += `<div class="results-section"><h4>🎯 Anagrammi perfetti (${single.length})</h4>`;
-            if (single.length > 0) {
-                html += `<div class="results-grid">${single.map(w => wordSpan(w)).join('')}</div>`;
-            } else {
-                html += `<div class="no-results-small">Nessuno</div>`;
-            }
-            html += `</div>`;
-            
-            // Multi-parola - sempre visibile se opzione attiva
-            if (document.getElementById('chkMulti').checked) {
-                html += `<div class="results-section"><h4>🔗 Multi-parola (${multi.length})</h4>`;
-                if (multi.length > 0) {
-                    html += `<div class="results-grid">${multi.map(arr => `<span class="result-word result-multi">${arr.map(escapeHtml).join(' + ')}</span>`).join('')}</div>`;
-                } else {
-                    html += `<div class="no-results-small">Nessuno</div>`;
-                }
-                html += `</div>`;
-            }
-            
-            // Parole incluse - sempre visibile se opzione attiva
-            if (document.getElementById('chkPartial').checked) {
-                html += `<div class="results-section"><h4>📦 Parole incluse (${partial.length})</h4>`;
-                if (partial.length > 0) {
-                    const byLen = {};
-                    for (const w of partial) { const len = w.replace(/['-]/g, '').length; if (!byLen[len]) byLen[len] = []; byLen[len].push(w); }
-                    const lengths = Object.keys(byLen).map(Number).sort((a, b) => b - a);
-                    html += lengths.map(len => `<div class="length-group"><div class="length-label">${len} lettere (${byLen[len].length})</div><div class="results-grid">${byLen[len].map(w => wordSpan(w, 'result-partial')).join('')}</div></div>`).join('');
-                } else {
-                    html += `<div class="no-results-small">Nessuna</div>`;
-                }
-                html += `</div>`;
-            }
-            
-            container.innerHTML = html;
-            card.classList.remove('hidden');
-        }
-        
-        function wordSpan(word, extra = '') {
-            const isCustom = customWords.has(word);
-            const cls = `result-word ${extra} ${isCustom ? 'result-custom' : ''}`.trim();
-            const esc = escapeHtml(word);
-            return `<span class="${cls}" onclick="searchWord('${esc}')" oncontextmenu="showContextMenu(event, '${esc}')" ontouchstart="handleWordTouchStart(event, '${esc}')" ontouchend="handleWordTouchEnd()" ontouchmove="handleWordTouchEnd()">${esc}</span>`;
-        }
-        
-        function searchWord(word) { 
-            switchTab('anagrammi');
-            document.getElementById('inputWord').value = word; 
-            findAnagrams(); 
-        }
-        
-        function escapeHtml(str) { return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
-        
-        function updateStatus(type, text) { document.getElementById('dictStatus').className = 'status ' + type; document.getElementById('statusText').textContent = text; }
-        function updateLoadingText(text) { document.getElementById('loadingText').textContent = text; }
-        function updateProgress(percent) { document.getElementById('progressFill').style.width = percent + '%'; }
-        
-        function showError(msg) { const el = document.getElementById('infoMessage'); el.textContent = msg; el.className = 'info-message error'; el.classList.remove('hidden'); }
-        function showSuccess(msg) { const el = document.getElementById('infoMessage'); el.textContent = msg; el.className = 'info-message success'; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 2500); }
-        function handleKeyUp(e, tab) { if (e.key === 'Enter') { if (tab === 'anagrammi') findAnagrams(); else searchPattern(); } }
-        function formatNumber(n) { return n.toLocaleString('it-IT'); }
+    },[step,data,upd,next,prev,handleCalc]);
+    return(<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4"><div className="max-w-4xl">
+    <div className="bg-white rounded-xl shadow-lg p-6 mb-6"><div className="flex items-center justify-between"><div><h1 className="text-3xl font-bold text-slate-800">🔬 DermPath v1.9</h1><p className="text-slate-600 mt-1">+ ICD, Pitiriasi rosea, Mastocitosi, Vasculopatia, MxA/CD123</p></div>
+    <button onClick={handleReset} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-semibold">🔄 Reset</button></div></div>
+    {!showRes&&<Steps cur={step}/>}
+    {!showRes?<div className="bg-white rounded-xl shadow-lg p-6">{renderStep}</div>:<Results dx={res.diagnoses} lowConf={res.lowConf} flags={res.flags} hints={res.hints} showIHC={showIHC} onMod={()=>setShowRes(false)} onExp={handleExp}/>}
+    <div className="mt-6 text-center text-sm text-slate-600"><p>DermPath v1.9 - ICD vs ACD | Pitiriasi rosea | Panniculite pancreatica | Mastocitosi | Necrobiosi lipoidica | Vasculopatia livedoide | Dermatomiosite | MxA/CD123</p></div></div></div>);
+};
+ReactDOM.render(<App/>,document.getElementById('root'));
     </script>
 </body>
 </html>

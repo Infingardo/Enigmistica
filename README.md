@@ -1,77 +1,107 @@
 # 🔤 Enigmistica
 
-Web app per anagrammi e ricerca parole italiane, utilizzabile da smartphone e desktop.
+Applicazione web per enigmisti: anagrammi, ricerca parole e giochi linguistici con vocabolario italiano.
 
-**👉 [Prova l'app](https://infingardo.github.io/Enigmistica/)**
+## Demo
+
+[**Apri l'applicazione**](https://infingardo.github.io/Enigmistica/)
 
 ## Funzionalità
 
 ### 🔄 Anagrammi
-- **Anagrammi perfetti** — tutte le lettere usate una volta
-- **Multi-parola** — combinazioni di 2-4 parole che formano l'anagramma
-- **Parole incluse** — sub-anagrammi (parole formate con un sottoinsieme delle lettere)
+- **Anagrammi perfetti**: trova tutte le parole con le stesse lettere
+- **Multi-parola**: combinazioni di 2-4 parole (es. ASTRONAUTA → TARA + UOSA + N)
+- **Parole incluse**: parole più corte contenute nelle lettere date
 
-### 🔍 Ricerca parole
-Cerca parole usando pattern con caratteri speciali:
+### 🔍 Cerca parole
+Ricerca con pattern flessibili:
+- `.` o `?` = una lettera qualsiasi
+- `+` = vocale
+- `-` = consonante  
+- `*` = zero o più lettere
 
-| Carattere | Significato |
-|-----------|-------------|
-| `.` o `?` | una lettera qualsiasi |
-| `+` | una vocale (a, e, i, o, u) |
-| `-` | una consonante |
-| `*` | zero o più lettere |
+Esempi: `cas+` → casa, case, caso | `*zione` → parole che finiscono in "zione"
 
-**Esempi:**
-- `cas+` → casa, case, caso, casi
-- `*zione` → parole che finiscono in "-zione"
-- `p-+ma` → prima, piuma...
-- `..ntro` → centro, contro, dentro...
-- `a*z*a` → inizia con "a", contiene "z", finisce con "a"
+### 🎯 Quiz
+Allenamento interattivo sugli anagrammi:
+- Parola mostrata, trova tutti gli anagrammi
+- Timer 60 secondi con bonus tempo
+- Punteggio e serie (streak)
+- Supporto anagrammi multi-parola per parole lunghe
+- Filtri per lunghezza e numero minimo di anagrammi
 
-### 📚 Vocabolari
-- 📘 **Ridotto** (~31k parole) — veloce, solo lemmi principali
-- 📚 **Completo** (~283k parole) — include forme flesse, plurali, coniugazioni
+### 🎮 Giochi
 
-### ⚙️ Altre funzionalità
-- **Personalizzazione** — aggiungi o rimuovi parole dal dizionario
-- **Offline** — dopo il primo caricamento, il dizionario resta in cache
-- **Esportazione** — scarica il dizionario personalizzato
+| Gioco | Descrizione | Esempio |
+|-------|-------------|---------|
+| **🔀 Cambi** | Catena di parole cambiando una lettera | MANO → MONO → MOTO |
+| **🪞 Palindromi** | Parole speculari | OTTO, RADAR, ANNA |
+| **↔️ Bifronti** | Coppie di parole una il rovescio dell'altra | ENOTECA ↔ ACETONE |
+| **✂️ Scarti** | Togli una lettera | CAMINO → CAINO |
+| **🔧 Zeppe** | Aggiungi lettera interna | CANTO → CANATO |
+| **➕ Aggiunte** | Lettera a inizio/fine | CARPA → SCARPA, CHE → CHEF |
+| **🧩 Sciarade** | Scomponi in parole | CANICOLA = CANI + COLA |
 
-## Uso
+## Vocabolario
 
-1. Apri il [sito](https://infingardo.github.io/Enigmistica/)
-2. Seleziona il vocabolario (Ridotto o Completo)
-3. Scegli la tab **Anagrammi** o **Cerca parole**
-4. Scrivi una parola o un pattern e premi Cerca
-5. Clicca su un risultato per cercarne gli anagrammi
-6. Tieni premuto (mobile) o click destro (desktop) per altre opzioni
+Due dizionari disponibili (fonte: [Enilab/BEI](http://www.enignet.it)):
+
+- **📘 Ridotto**: ~31.000 parole, caricamento veloce
+- **📚 Completo**: ~283.000 parole, esaustivo
+
+### Personalizzazione
+- ➕ Aggiungi parole personalizzate
+- 🗑️ Rimuovi parole indesiderate
+- ♻️ Ripristina parole rimosse
+- 📥 Esporta dizionario modificato
+- ✉️ Suggerisci parole al curatore
+
+## Tecnologie
+
+- HTML5 / CSS3 / JavaScript vanilla
+- IndexedDB per cache e persistenza
+- PWA-ready (funziona offline dopo primo caricamento)
+- Zero dipendenze esterne
+- Responsive (mobile-friendly)
 
 ## Installazione locale
 
+1. Clona il repository:
 ```bash
-git clone https://github.com/Infingardo/Enigmistica.git
-cd Enigmistica
-# Apri index.html nel browser
+git clone https://github.com/infingardo/Enigmistica.git
 ```
 
-## File
+2. Apri `index.html` nel browser
 
-| File | Descrizione |
-|------|-------------|
-| `index.html` | App completa (HTML + CSS + JS) |
-| `dizionario_ridotto.txt` | ~31k parole |
-| `dizionario_completo.txt` | ~283k parole |
+Oppure servilo con un server locale:
+```bash
+python -m http.server 8000
+# Apri http://localhost:8000
+```
+
+## Struttura file
+
+```
+Enigmistica/
+├── index.html              # Applicazione completa
+├── dizionario_ridotto.txt  # Vocabolario ridotto
+├── dizionario_completo.txt # Vocabolario completo
+└── README.md
+```
+
+## Note tecniche
+
+- I dizionari vengono scaricati e salvati in IndexedDB al primo utilizzo
+- Le modifiche (parole aggiunte/rimosse) sono persistenti nel browser
+- La ricerca anagrammi multi-parola è limitata a 500 combinazioni per performance
+- La ricerca cambi usa BFS con limite di 10.000 nodi visitati
+- La ricerca sciarade nel dizionario analizza max 5.000 parole
 
 ## Crediti
 
-Il vocabolario proviene da **[Enilab](http://www.enignet.it/software.html)**, software gratuito per l'enigmistica sviluppato da Giulio Ferrari e distribuito dalla **[Biblioteca Enigmistica Italiana (BEI)](http://www.enignet.it/)**.
+- Vocabolario: [Enilab/BEI](http://www.enignet.it) - Biblioteca Enigmistica Italiana
+- Sviluppo: Progetto personale per appassionati di enigmistica
 
-## Licenza
+## License
 
-Il codice dell'app è rilasciato sotto licenza MIT.
-
-Il vocabolario Enilab è freeware per uso personale e non commerciale (vedi [licenza Enilab](http://www.enignet.it/software.html)).
-
-## Autore
-
-Filippo Bianchi (kc8)
+MIT License - Uso libero con attribuzione.
