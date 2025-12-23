@@ -451,7 +451,10 @@
     </style>
 </head>
 <body>
-    <h1>🔤 Enigmistica</h1>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+        <h1 style="margin: 0;">🔤 Enigmistica</h1>
+        <button onclick="showHelp()" style="background: #3498db; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.1em; cursor: pointer; font-weight: bold;">?</button>
+    </div>
     <p class="subtitle">Anagrammi e ricerca parole italiane</p>
     
     <div class="card">
@@ -848,6 +851,67 @@
             <div class="modal-buttons">
                 <button class="btn-secondary" onclick="closeSuggestModal()">Annulla</button>
                 <button class="btn-warning" onclick="sendSuggestion()">Invia</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="helpModal" onclick="closeModalOnOverlay(event)">
+        <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h3>📖 Guida all'uso</h3>
+            
+            <div style="text-align: left; font-size: 0.9em; line-height: 1.6;">
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🚀 Per iniziare</h4>
+                <p>Scegli un vocabolario: <strong>Ridotto</strong> (~31k parole, veloce) o <strong>Completo</strong> (~283k parole, esaustivo). Il dizionario viene salvato nel browser per gli usi successivi.</p>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🔄 Anagrammi</h4>
+                <p>Scrivi una parola e trova tutti i suoi anagrammi.</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><strong>Multi-parola:</strong> trova anagrammi composti da più parole (es. ASTRONAVE → RASATO + VEN)</li>
+                    <li><strong>Parole incluse:</strong> mostra anche parole più corte contenute nelle lettere</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🔍 Cerca (Pattern)</h4>
+                <p>Cerca parole usando caratteri speciali:</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><code>.</code> o <code>?</code> = una lettera qualsiasi</li>
+                    <li><code>+</code> = una vocale</li>
+                    <li><code>-</code> = una consonante</li>
+                    <li><code>*</code> = zero o più lettere</li>
+                </ul>
+                <p>Esempi: <code>cas+</code> → casa, case, caso | <code>*mente</code> → parole che finiscono in -mente</p>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🎯 Quiz</h4>
+                <p>Mettiti alla prova! Ti viene mostrata una parola e devi trovare tutti i suoi anagrammi.</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li>Scrivi <strong>un anagramma alla volta</strong> e premi Invio</li>
+                    <li>Per multi-parola: scrivi "parola1 parola2" o "parola1 + parola2"</li>
+                    <li>Hai 60 secondi per parola</li>
+                    <li><strong>Serie:</strong> parole completate consecutive senza saltare</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🎮 Giochi</h4>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><strong>🔀 Cambi:</strong> trasforma una parola in un'altra cambiando una lettera alla volta</li>
+                    <li><strong>🪞 Palindromi:</strong> parole uguali lette al contrario (ANNA, RADAR)</li>
+                    <li><strong>↔️ Bifronti:</strong> parole che al contrario ne formano un'altra (AMOR ↔ ROMA)</li>
+                    <li><strong>✂️ Scarti:</strong> togli una lettera (CAMPO → CAPO)</li>
+                    <li><strong>🔧 Zeppe:</strong> aggiungi una lettera dentro (CANTO → CANTO)</li>
+                    <li><strong>➕ Aggiunte:</strong> aggiungi una lettera all'inizio o fine</li>
+                    <li><strong>🧩 Sciarade:</strong> scomponi in parole (CANICOLA = CANI + COLA)</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">💡 Suggerimenti</h4>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li>Clicca su una parola nei risultati per cercare i suoi anagrammi</li>
+                    <li>Tieni premuto (o tasto destro) per rimuovere una parola o cercare pattern</li>
+                    <li>Usa "➕ Aggiungi" per aggiungere parole mancanti al dizionario locale</li>
+                </ul>
+                
+                <p style="margin-top: 15px; color: #7f8c8d; font-size: 0.85em;">Vocabolario: <a href="http://www.enignet.it" target="_blank">Enilab/BEI</a> • App: <a href="https://github.com/infingardo" target="_blank">infingardo</a></p>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="closeHelp()" style="width: 100%;">Ho capito!</button>
             </div>
         </div>
     </div>
@@ -1311,6 +1375,9 @@
         }
         
         function closeSuggestModal() { document.getElementById('suggestModal').classList.add('hidden'); }
+
+        function showHelp() { document.getElementById('helpModal').classList.remove('hidden'); }
+        function closeHelp() { document.getElementById('helpModal').classList.add('hidden'); }
         
         function sendSuggestion() {
             const word = document.getElementById('suggestWordInput').value.trim();
