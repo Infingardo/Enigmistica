@@ -494,17 +494,62 @@
         <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
             <h3>📖 Guida all'uso</h3>
             <div style="text-align: left; font-size: 0.9em; line-height: 1.6;">
-                <h4 style="color: #3498db;">🔄 Anagrammi con Pattern</h4>
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🚀 Per iniziare</h4>
+                <p>Scegli un vocabolario: <strong>Ridotto</strong> (~31k parole, veloce) o <strong>Completo</strong> (~283k parole, esaustivo). Il dizionario viene salvato nel browser.</p>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🔄 Anagrammi</h4>
+                <p>Scrivi una parola e trova tutti i suoi anagrammi.</p>
                 <ul style="margin: 5px 0; padding-left: 20px;">
-                    <li><code>roma+</code> = anagrammi di ROMA + una vocale</li>
-                    <li><code>roma-</code> = anagrammi di ROMA + una consonante</li>
-                    <li><code>roma?</code> = anagrammi di ROMA + una lettera qualsiasi</li>
+                    <li><strong>Multi-parola:</strong> anagrammi composti da più parole</li>
+                    <li><strong>Parole incluse:</strong> parole più corte contenute nelle lettere</li>
+                </ul>
+                <p><strong>Pattern speciali:</strong></p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><code>roma+</code> = ROMA + una vocale</li>
+                    <li><code>roma-</code> = ROMA + una consonante</li>
+                    <li><code>roma?</code> = ROMA + una lettera qualsiasi</li>
                     <li><code>roma+-</code> = ROMA + vocale + consonante</li>
                     <li><code>roma++</code> = ROMA + due vocali</li>
-                    <li><code>roma--</code> = ROMA + due consonanti</li>
-                    <li><code>roma*</code> = superanagrammi (parole che contengono le lettere di ROMA)</li>
+                    <li><code>roma*</code> = superanagrammi (parole che contengono ROMA)</li>
                 </ul>
-                <p>Puoi combinare liberamente +, - e ? (es: <code>roma++-</code>, <code>test???</code>)</p>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🔍 Cerca (Pattern)</h4>
+                <p>Cerca parole usando caratteri speciali:</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><code>.</code> o <code>?</code> = una lettera qualsiasi</li>
+                    <li><code>+</code> = una vocale</li>
+                    <li><code>-</code> = una consonante</li>
+                    <li><code>*</code> = zero o più lettere</li>
+                </ul>
+                <p>Es: <code>cas+</code> → casa, case | <code>*mente</code> → parole in -mente</p>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🎯 Quiz</h4>
+                <p>Ti viene mostrata una parola, trova tutti i suoi anagrammi!</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li>Scrivi un anagramma alla volta e premi Invio</li>
+                    <li>Per multi-parola: "parola1 parola2" o "parola1 + parola2"</li>
+                    <li>60 secondi per parola, bonus tempo se completi</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🎮 Giochi</h4>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><strong>🔀 Cambi:</strong> trasforma una parola cambiando una lettera alla volta</li>
+                    <li><strong>🪞 Palindromi:</strong> parole uguali al contrario (ANNA, RADAR)</li>
+                    <li><strong>↔️ Bifronti:</strong> parole che al contrario ne formano un'altra (AMOR ↔ ROMA)</li>
+                    <li><strong>✂️ Scarti:</strong> togli una lettera (CAMPO → CAPO)</li>
+                    <li><strong>🔧 Zeppe:</strong> aggiungi una lettera dentro</li>
+                    <li><strong>➕ Aggiunte:</strong> aggiungi lettera a inizio o fine</li>
+                    <li><strong>🧩 Sciarade:</strong> scomponi in parole (CANICOLA = CANI + COLA)</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">💡 Suggerimenti</h4>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li>Clicca su una parola per cercare i suoi anagrammi</li>
+                    <li>Tieni premuto (o tasto destro) per rimuoverla o cercare pattern</li>
+                    <li>Usa "➕ Aggiungi" per parole mancanti</li>
+                </ul>
+                
+                <p style="margin-top: 15px; color: #7f8c8d; font-size: 0.85em;">Vocabolario: <a href="http://www.enignet.it" target="_blank">Enilab/BEI</a> • <a href="https://github.com/infingardo/Enigmistica" target="_blank">GitHub</a></p>
             </div>
             <div class="modal-buttons"><button class="btn-primary" onclick="closeHelp()" style="width: 100%;">Ho capito!</button></div>
         </div>

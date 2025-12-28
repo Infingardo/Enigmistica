@@ -9,20 +9,42 @@ Applicazione web per enigmisti: anagrammi, ricerca parole e giochi linguistici c
 ## Funzionalità
 
 ### 🔄 Anagrammi
+
 - **Anagrammi perfetti**: trova tutte le parole con le stesse lettere
 - **Multi-parola**: combinazioni di 2-4 parole (es. ASTRONAUTA → TARA + UOSA + N)
 - **Parole incluse**: parole più corte contenute nelle lettere date
 
-### 🔍 Cerca parole
-Ricerca con pattern flessibili:
-- `.` o `?` = una lettera qualsiasi
-- `+` = vocale
-- `-` = consonante  
-- `*` = zero o più lettere
+#### Pattern per anagrammi estesi
 
-Esempi: `cas+` → casa, case, caso | `*zione` → parole che finiscono in "zione"
+Aggiungi caratteri speciali alla fine della parola per cercare anagrammi con lettere aggiuntive:
+
+| Pattern | Significato | Esempio |
+|---------|-------------|---------|
+| `+` | Aggiungi una vocale | `roma+` → anagrammi di ROMA + A/E/I/O/U |
+| `-` | Aggiungi una consonante | `roma-` → anagrammi di ROMA + B/C/D/... |
+| `?` | Aggiungi una lettera qualsiasi | `roma?` → anagrammi di ROMA + qualsiasi lettera |
+| `*` | Superanagrammi | `roma*` → parole che contengono tutte le lettere di ROMA |
+
+**Combinazioni**: puoi combinare liberamente i pattern:
+- `roma++` → ROMA + due vocali
+- `roma--` → ROMA + due consonanti  
+- `roma+-` → ROMA + una vocale + una consonante
+- `roma???` → ROMA + tre lettere qualsiasi
+- `casa++-` → CASA + due vocali + una consonante
+
+### 🔍 Cerca parole
+
+Ricerca con pattern flessibili:
+
+| Pattern | Significato | Esempio |
+|---------|-------------|---------|
+| `.` o `?` | Una lettera qualsiasi | `cas?` → casa, case, caso |
+| `+` | Una vocale | `c+sa` → casa, cosa |
+| `-` | Una consonante | `ca-a` → cala, cama, cana... |
+| `*` | Zero o più lettere | `*zione` → parole che finiscono in "zione" |
 
 ### 🎯 Quiz
+
 Allenamento interattivo sugli anagrammi:
 - Parola mostrata, trova tutti gli anagrammi
 - Timer 60 secondi con bonus tempo
@@ -50,6 +72,7 @@ Due dizionari disponibili (fonte: [Enilab/BEI](http://www.enignet.it)):
 - **📚 Completo**: ~283.000 parole, esaustivo
 
 ### Personalizzazione
+
 - ➕ Aggiungi parole personalizzate
 - 🗑️ Rimuovi parole indesiderate
 - ♻️ Ripristina parole rimosse
@@ -94,13 +117,14 @@ Enigmistica/
 - I dizionari vengono scaricati e salvati in IndexedDB al primo utilizzo
 - Le modifiche (parole aggiunte/rimosse) sono persistenti nel browser
 - La ricerca anagrammi multi-parola è limitata a 500 combinazioni per performance
+- La ricerca pattern anagrammi limita a 50.000 combinazioni per evitare rallentamenti
 - La ricerca cambi usa BFS con limite di 10.000 nodi visitati
 - La ricerca sciarade nel dizionario analizza max 5.000 parole
 
 ## Crediti
 
 - Vocabolario: [Enilab/BEI](http://www.enignet.it) - Biblioteca Enigmistica Italiana
-- Sviluppo: Progetto personale per appassionati di enigmistica
+- Sviluppo: [infingardo](https://github.com/infingardo)
 
 ## License
 
