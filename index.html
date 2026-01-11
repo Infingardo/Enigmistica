@@ -254,23 +254,6 @@
         .quiz-progress { background: #ecf0f1; border-radius: 20px; height: 8px; margin: 15px 0; overflow: hidden; }
         .quiz-progress-fill { height: 100%; background: linear-gradient(90deg, #27ae60, #2ecc71); transition: width 0.3s ease; }
         
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .card { padding: 15px; }
-            .options { flex-direction: column; gap: 10px; }
-            .status-bar { flex-direction: column; align-items: stretch; }
-            .btn-group { flex-direction: column; }
-            button { width: 100%; }
-            .modal-buttons { flex-direction: column; }
-            .tab { padding: 10px 8px; font-size: 0.85em; }
-            .quiz-word { font-size: 1.8em; }
-            .quiz-buttons { flex-direction: column; }
-            .quiz-buttons button { width: 100%; }
-            .cambi-inputs { flex-direction: column; }
-            .cambi-arrow { transform: rotate(90deg); }
-            .game-selector { flex-direction: column; }
-        }
-        
         .game-selector { display: flex; gap: 8px; margin-bottom: 20px; }
         .game-btn { flex: 1; padding: 10px; border: 2px solid #ecf0f1; border-radius: 8px; background: white; cursor: pointer; font-size: 0.9em; transition: all 0.2s; }
         .game-btn:hover { border-color: #9b59b6; background: #f5eef8; }
@@ -287,6 +270,161 @@
         .cambi-step-arrow { color: #9b59b6; font-weight: bold; }
         .bifronte-pair { display: inline-flex; align-items: center; gap: 8px; background: #f5eef8; padding: 8px 14px; border-radius: 20px; margin: 4px; }
         .bifronte-arrow { color: #9b59b6; }
+        
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 600px) {
+            body { padding: 12px; font-size: 16px; }
+            .card { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .subtitle { font-size: 1em; margin-bottom: 20px; }
+            
+            /* Tabs più grandi per touch */
+            .tabs { border-radius: 10px; }
+            .tab { padding: 14px 8px; font-size: 0.9em; min-height: 48px; }
+            
+            /* Input più grandi */
+            input[type="text"] { 
+                font-size: 1.1em; 
+                padding: 16px; 
+                border-radius: 10px;
+            }
+            
+            /* Bottoni touch-friendly (min 48px) */
+            button { 
+                width: 100%; 
+                min-height: 48px; 
+                font-size: 1em;
+                padding: 14px 16px;
+                border-radius: 10px;
+            }
+            .btn-small { 
+                min-height: 44px; 
+                font-size: 0.9em;
+                padding: 12px 14px;
+            }
+            
+            /* Options più spaziose */
+            .options { 
+                flex-direction: column; 
+                gap: 12px; 
+            }
+            .option { 
+                padding: 8px 0;
+                font-size: 1em;
+            }
+            .option label { font-size: 1em; }
+            select { 
+                padding: 10px 14px; 
+                font-size: 1em;
+                min-height: 44px;
+                border-radius: 8px;
+            }
+            
+            /* Checkbox più grandi */
+            .option input[type="checkbox"] {
+                width: 22px;
+                height: 22px;
+            }
+            
+            /* Status e gruppi */
+            .status-bar { flex-direction: column; align-items: stretch; gap: 12px; }
+            .btn-group { flex-direction: column; gap: 8px; }
+            .status { font-size: 1em; text-align: center; }
+            
+            /* Hint box più leggibili */
+            .hint-box { 
+                font-size: 0.95em; 
+                padding: 14px;
+                line-height: 1.6;
+            }
+            .hint-box code { 
+                padding: 4px 8px; 
+                font-size: 1em;
+            }
+            .hint { font-size: 0.9em; line-height: 1.5; }
+            
+            /* Risultati touch-friendly */
+            .result-word { 
+                padding: 12px 16px; 
+                font-size: 1em;
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                border-radius: 22px;
+            }
+            .results-grid { gap: 10px; }
+            .results-section h4 { font-size: 1em; padding-bottom: 8px; }
+            .length-label { font-size: 0.9em; margin-bottom: 8px; }
+            .results-container { max-height: 60vh; }
+            
+            /* Quiz ottimizzato */
+            .quiz-word { font-size: 2em; letter-spacing: 0.15em; }
+            .quiz-prompt { font-size: 1em; }
+            .quiz-stats { gap: 20px; }
+            .quiz-stat-value { font-size: 1.6em; }
+            .quiz-stat-label { font-size: 0.9em; }
+            .quiz-found-word { 
+                padding: 10px 14px; 
+                font-size: 1em;
+            }
+            .quiz-feedback { 
+                font-size: 1em; 
+                padding: 14px;
+                min-height: 52px;
+            }
+            .quiz-buttons { flex-direction: column; gap: 10px; }
+            .quiz-buttons button { width: 100%; }
+            
+            /* Giochi */
+            .game-selector { 
+                flex-direction: column; 
+                gap: 8px;
+            }
+            .game-btn { 
+                min-height: 48px; 
+                font-size: 1em;
+                padding: 12px;
+            }
+            .cambi-inputs { flex-direction: column; gap: 8px; }
+            .cambi-arrow { transform: rotate(90deg); font-size: 1.2em; }
+            .cambi-step { padding: 10px 16px; font-size: 1em; }
+            .bifronte-pair { padding: 10px 14px; font-size: 1em; }
+            
+            /* Dizionario selector */
+            .dict-selector { flex-direction: column; gap: 10px; }
+            .dict-btn { 
+                min-height: 60px; 
+                padding: 14px;
+            }
+            .dict-btn-title { font-size: 1.1em; }
+            .dict-btn-info { font-size: 0.9em; }
+            
+            /* Modal */
+            .modal { padding: 20px; }
+            .modal h3 { font-size: 1.2em; }
+            .modal-buttons { flex-direction: column; gap: 10px; }
+            
+            /* Context menu */
+            .context-menu-item { 
+                padding: 14px 18px; 
+                font-size: 1em;
+                min-height: 48px;
+            }
+            
+            /* Credits e dettagli */
+            .credits { font-size: 0.85em; }
+            .dict-options summary { font-size: 1em; padding: 8px 0; }
+            .custom-words-count { font-size: 0.95em; }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 380px) {
+            body { padding: 8px; }
+            .card { padding: 12px; }
+            h1 { font-size: 1.3em; }
+            .quiz-word { font-size: 1.6em; }
+            .tab { font-size: 0.8em; padding: 12px 6px; }
+        }
     </style>
 </head>
 <body>
