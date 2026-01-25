@@ -1,11 +1,11 @@
 // Service Worker per Enigmistica PWA
-const CACHE_NAME = 'enigmistica-v3';
+const CACHE_NAME = 'enigmistica-v4';
 const CACHE_URLS = [
   './',
   './index.html',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Installa: cacha i file essenziali
