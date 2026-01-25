@@ -13,6 +13,7 @@ Applicazione web per enigmisti: anagrammi, ricerca parole e giochi linguistici c
 - **Anagrammi perfetti**: trova tutte le parole con le stesse lettere
 - **Multi-parola**: combinazioni di 2-4 parole (es. ASTRONAUTA → TARA + UOSA + N)
 - **Parole incluse**: parole più corte contenute nelle lettere date
+- **Tooltip live**: traduzione del pattern in tempo reale con stima combinazioni
 
 #### Pattern per anagrammi estesi
 
@@ -25,7 +26,7 @@ Aggiungi caratteri speciali alla fine della parola per cercare anagrammi con let
 | `?` | Aggiungi una lettera qualsiasi | `roma?` → anagrammi di ROMA + qualsiasi lettera |
 | `*` | Superanagrammi | `roma*` → parole che contengono tutte le lettere di ROMA |
 
-**Combinazioni**: puoi combinare liberamente i pattern:
+**Combinazioni**: puoi combinare liberamente i pattern (escluso `*`):
 - `roma++` → ROMA + due vocali
 - `roma--` → ROMA + due consonanti  
 - `roma+-` → ROMA + una vocale + una consonante
@@ -42,6 +43,8 @@ Ricerca con pattern flessibili:
 | `+` | Una vocale | `c+sa` → casa, cosa |
 | `-` | Una consonante | `ca-a` → cala, cama, cana... |
 | `*` | Zero o più lettere | `*zione` → parole che finiscono in "zione" |
+
+I filtri lunghezza min/max appaiono solo quando il pattern contiene `*` (altrimenti la lunghezza è determinata).
 
 ### 🎯 Quiz
 
@@ -78,6 +81,7 @@ Due dizionari disponibili (fonte: [Enilab/BEI](http://www.enignet.it)):
 - ♻️ Ripristina parole rimosse
 - 📥 Esporta dizionario modificato
 - ✉️ Suggerisci parole al curatore
+- 📋 Copia risultati negli appunti
 
 ## Tecnologie
 
@@ -114,12 +118,34 @@ Enigmistica/
 
 ## Note tecniche
 
-- I dizionari vengono scaricati e salvati in IndexedDB al primo utilizzo
-- Le modifiche (parole aggiunte/rimosse) sono persistenti nel browser
-- La ricerca anagrammi multi-parola è limitata a 500 combinazioni per performance
-- La ricerca pattern anagrammi limita a 50.000 combinazioni per evitare rallentamenti
-- La ricerca cambi usa BFS con limite di 10.000 nodi visitati
-- La ricerca sciarade nel dizionario analizza max 5.000 parole
+### Limiti configurabili
+
+I limiti di ricerca sono centralizzati in `CONFIG`:
+
+| Parametro | Valore | Descrizione |
+|-----------|--------|-------------|
+| `maxPatternResults` | 1000 | Risultati max per ricerca pattern |
+| `maxMultiWordResults` | 500 | Anagrammi multi-parola max |
+| `maxPatternCombinations` | 50000 | Combinazioni max per pattern anagrammi |
+| `maxCambiNodes` | 10000 | Nodi BFS max per catena cambi |
+| `maxSciaradeInverseCheck` | 5000 | Parole analizzate per sciarade inverse |
+| `maxSuperanagramsPerGroup` | 200 | Superanagrammi visualizzati per gruppo |
+
+Quando un limite viene raggiunto, appare un warning giallo.
+
+### Apostrofi e trattini
+
+Le parole con apostrofo o trattino sono trattate come forme unite:
+- `dell'arte` → `dellarte`
+- `week-end` → `weekend`
+
+Scelta necessaria per gli anagrammi, ma può influire semanticamente su alcuni giochi (sciarade, bifronti).
+
+### Ottimizzazioni
+
+- **Pre-indice `wordsByLength`**: accelera la ricerca Cambi
+- **Pruning in multi-parola**: taglia rami morti quando `remaining < minLen * wordsNeeded`
+- **IndexedDB**: dizionario scaricato una volta e cachato nel browser
 
 ## Crediti
 
