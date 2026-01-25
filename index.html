@@ -798,10 +798,35 @@
         }
         
         // FIX: mostra/nascondi filtri lunghezza se pattern contiene *
+        // e imposta lunghezza minima in base ai caratteri fissi
         function updatePatternLengthVisibility() {
-            const pattern = document.getElementById('inputPattern').value;
+            const pattern = document.getElementById('inputPattern').value.toLowerCase();
             const hasWildcard = pattern.includes('*');
             document.getElementById('patternLengthOptions').classList.toggle('hidden', !hasWildcard);
+            
+            if (hasWildcard) {
+                // Calcola caratteri fissi (tutto tranne *)
+                let fixedChars = 0;
+                for (const char of pattern) {
+                    if (char === '*') continue;
+                    if (char === '.' || char === '?' || char === '+' || char === '-' || /[a-zàèéìòùâêîôûäëïöüç]/.test(char)) {
+                        fixedChars++;
+                    }
+                }
+                
+                const minAllowed = Math.max(1, fixedChars);
+                const selMin = document.getElementById('selMinLenSearch');
+                const currentMin = parseInt(selMin.value) || 3;
+                const newValue = Math.max(minAllowed, currentMin < minAllowed ? minAllowed : currentMin);
+                
+                // Rigenera opzioni con minimo corretto
+                let options = '';
+                for (let i = minAllowed; i <= 15; i++) {
+                    const selected = (i === newValue) ? ' selected' : '';
+                    options += `<option value="${i}"${selected}>${i}</option>`;
+                }
+                selMin.innerHTML = options;
+            }
         }
         
         function switchTab(tab) {
