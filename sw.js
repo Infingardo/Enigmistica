@@ -1,5 +1,5 @@
 // Service Worker per Enigmistica PWA
-const CACHE_NAME = 'enigmistica-v1';
+const CACHE_NAME = 'enigmistica-v2';
 const CACHE_URLS = [
   './',
   './index.html',
