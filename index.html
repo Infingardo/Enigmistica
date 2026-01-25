@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anagrammi e Ricerca Parole</title>
+    <title>Enigmistica - Anagrammi e Giochi</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Enigmistica">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -1819,6 +1828,15 @@
                 container.innerHTML = html;
             }
             card.classList.remove('hidden');
+        }
+        
+        // Registra Service Worker per PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registrato:', reg.scope))
+                    .catch(err => console.log('SW fallito:', err));
+            });
         }
     </script>
 </body>

@@ -87,9 +87,23 @@ Due dizionari disponibili (fonte: [Enilab/BEI](http://www.enignet.it)):
 
 - HTML5 / CSS3 / JavaScript vanilla
 - IndexedDB per cache e persistenza
-- PWA-ready (funziona offline dopo primo caricamento)
+- **PWA installabile** (funziona offline, si installa come app)
 - Zero dipendenze esterne
 - Responsive (mobile-friendly)
+
+## Installazione come App (PWA)
+
+### Su smartphone (Android/iOS)
+1. Apri [l'applicazione](https://infingardo.github.io/Enigmistica/) nel browser
+2. **Android (Chrome)**: Menu ⋮ → "Aggiungi a schermata Home"
+3. **iOS (Safari)**: Condividi ↑ → "Aggiungi a Home"
+
+### Su desktop (Chrome/Edge)
+1. Apri l'applicazione
+2. Clicca l'icona di installazione nella barra degli indirizzi (➕ o 📥)
+3. Oppure: Menu → "Installa Enigmistica"
+
+Una volta installata, funziona **completamente offline** dopo il primo caricamento del dizionario.
 
 ## Installazione locale
 
@@ -111,6 +125,11 @@ python -m http.server 8000
 ```
 Enigmistica/
 ├── index.html              # Applicazione completa
+├── manifest.json           # Manifest PWA
+├── sw.js                   # Service Worker
+├── icons/
+│   ├── icon-192.png        # Icona 192x192
+│   └── icon-512.png        # Icona 512x512
 ├── dizionario_ridotto.txt  # Vocabolario ridotto
 ├── dizionario_completo.txt # Vocabolario completo
 └── README.md
