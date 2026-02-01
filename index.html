@@ -107,6 +107,12 @@
         .option { display: flex; align-items: center; gap: 6px; }
         .option label { font-size: 0.9em; color: #555; }
         
+        .options-group { margin-bottom: 15px; }
+        .option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        .sub-option { margin-left: 8px; padding-left: 8px; border-left: 2px solid #ecf0f1; color: #7f8c8d; }
+        .sub-option label { font-size: 0.85em; color: #7f8c8d; }
+        .sub-option select { font-size: 0.85em; }
+        
         select { padding: 6px 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 0.9em; }
         
         .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -355,6 +361,8 @@
                 font-size: 1em;
             }
             .option label { font-size: 1em; }
+            .option-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .sub-option { margin-left: 28px; border-left: none; padding-left: 0; }
             select { 
                 padding: 10px 14px; 
                 font-size: 1em;
@@ -524,11 +532,15 @@
                 <code>?</code> = +lettera &nbsp;
                 <code>*</code> = superanagrammi
             </div>
-            <div class="options">
-                <div class="option"><input type="checkbox" id="chkMulti" checked onchange="updateAnagramFiltersVisibility()"><label for="chkMulti">Multi-parola</label></div>
-                <div class="option"><input type="checkbox" id="chkPartial" checked onchange="updateAnagramFiltersVisibility()"><label for="chkPartial">Parole incluse</label></div>
-                <div class="option" id="optMaxWords"><label for="selMaxWords">Max parole:</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
-                <div class="option" id="optMinLen"><label for="selMinLen">Min lettere:</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+            <div class="options-group">
+                <div class="option-row">
+                    <div class="option"><input type="checkbox" id="chkMulti" checked onchange="updateAnagramFiltersVisibility()"><label for="chkMulti">Multi-parola</label></div>
+                    <div class="option sub-option" id="optMaxWords"><label for="selMaxWords">max</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
+                </div>
+                <div class="option-row">
+                    <div class="option"><input type="checkbox" id="chkPartial" checked onchange="updateAnagramFiltersVisibility()"><label for="chkPartial">Parole incluse</label></div>
+                    <div class="option sub-option" id="optMinLen"><label for="selMinLen">min</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select><label>lettere</label></div>
+                </div>
             </div>
             <button class="btn-primary" onclick="findAnagrams()" id="btnSearch" disabled style="width: 100%;">🔍 Cerca anagrammi</button>
             <p class="hint">💡 Esempi: <code>roma+</code> (roma+vocale), <code>roma+-</code> (roma+vocale+cons), <code>roma*</code> (superanagrammi)</p>
