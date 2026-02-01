@@ -525,10 +525,10 @@
                 <code>*</code> = superanagrammi
             </div>
             <div class="options">
-                <div class="option"><input type="checkbox" id="chkMulti" checked><label for="chkMulti">Multi-parola</label></div>
-                <div class="option"><input type="checkbox" id="chkPartial" checked><label for="chkPartial">Parole incluse</label></div>
-                <div class="option"><label for="selMaxWords">Max:</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
-                <div class="option"><label for="selMinLen">Min:</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+                <div class="option"><input type="checkbox" id="chkMulti" checked onchange="updateAnagramFiltersVisibility()"><label for="chkMulti">Multi-parola</label></div>
+                <div class="option"><input type="checkbox" id="chkPartial" checked onchange="updateAnagramFiltersVisibility()"><label for="chkPartial">Parole incluse</label></div>
+                <div class="option" id="optMaxWords"><label for="selMaxWords">Max parole:</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
+                <div class="option" id="optMinLen"><label for="selMinLen">Min lettere:</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
             </div>
             <button class="btn-primary" onclick="findAnagrams()" id="btnSearch" disabled style="width: 100%;">🔍 Cerca anagrammi</button>
             <p class="hint">💡 Esempi: <code>roma+</code> (roma+vocale), <code>roma+-</code> (roma+vocale+cons), <code>roma*</code> (superanagrammi)</p>
@@ -794,7 +794,22 @@
                 
                 // FIX: listener per nascondere/mostrare filtri lunghezza in base al pattern
                 document.getElementById('inputPattern').addEventListener('input', updatePatternLengthVisibility);
+                
+                // Inizializza visibilità filtri anagrammi
+                updateAnagramFiltersVisibility();
             } catch (err) { console.error('Init:', err); }
+        }
+        
+        // Mostra/nascondi filtri anagrammi in base alle checkbox
+        function updateAnagramFiltersVisibility() {
+            const multiChecked = document.getElementById('chkMulti').checked;
+            const partialChecked = document.getElementById('chkPartial').checked;
+            
+            // Max parole: visibile solo se multi-parola attivo
+            document.getElementById('optMaxWords').classList.toggle('hidden', !multiChecked);
+            
+            // Min lettere: visibile se almeno una delle due opzioni è attiva
+            document.getElementById('optMinLen').classList.toggle('hidden', !multiChecked && !partialChecked);
         }
         
         // FIX: mostra/nascondi filtri lunghezza se pattern contiene *
@@ -917,6 +932,7 @@
             buildWordsByLength(); // Pre-indice per cambi
             // FIX: inizializza visibilità filtri
             updatePatternLengthVisibility();
+            updateAnagramFiltersVisibility();
         }
         
         // Pre-indicizza parole per lunghezza (ottimizza findCambi)
@@ -1855,8 +1871,8 @@
             card.classList.remove('hidden');
         }
         
-        // Registra Service Worker per PWA
-        if ('serviceWorker' in navigator) {
+        // Service Worker per PWA - attivo solo su GitHub Pages
+        if ('serviceWorker' in navigator && location.hostname.includes('github.io')) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => console.log('SW registrato:', reg.scope))
