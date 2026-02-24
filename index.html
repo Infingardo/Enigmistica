@@ -1071,6 +1071,7 @@
             if (wordSet.has(word)) { alert('Già presente'); closeAddWordModal(); return; }
             removedWords.delete(word); addWordToIndex(word); customWords.add(word);
             await saveCustomData();
+            buildQuizCandidates(); // FIX: aggiorna candidati quiz dopo aggiunta
             closeAddWordModal();
             updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
             updateCustomWordsCount();
@@ -1081,6 +1082,7 @@
             if (!wordSet.has(word)) return;
             removeWordFromIndex(word); removedWords.add(word); customWords.delete(word);
             await saveCustomData();
+            buildQuizCandidates(); // FIX: aggiorna candidati quiz dopo rimozione
             updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
             updateCustomWordsCount();
             showSuccess(`"${word}" rimossa`);
@@ -1317,7 +1319,9 @@
             const results = [], letters = input.split('').sort(), seen = new Set();
             const candidates = findCandidates(letters, minLen);
             let truncated = false;
-            function search(rem, cur, depth) {
+            // FIX: startIdx impedisce di riproporre candidati già usati prima nella lista,
+            // eliminando permutazioni duplicate (A+B vs B+A) senza dover aspettare il seen check.
+            function search(rem, cur, depth, startIdx) {
                 if (rem.length === 0 && cur.length >= 2) { const key = [...cur].sort().join(' '); if (!seen.has(key)) { seen.add(key); results.push([...cur]); } return; }
                 if (depth >= maxWords || results.length >= CONFIG.maxMultiWordResults) { if (results.length >= CONFIG.maxMultiWordResults) truncated = true; return; }
                 // Pruning: se le lettere rimaste sono meno di minLen, non possiamo formare altre parole
@@ -1325,14 +1329,15 @@
                 // Pruning: se non abbiamo abbastanza lettere per raggiungere 2 parole
                 const wordsNeeded = Math.max(0, 2 - cur.length);
                 if (rem.length < minLen * wordsNeeded) return;
-                for (const word of candidates) {
+                for (let i = startIdx; i < candidates.length; i++) {
+                    const word = candidates[i];
                     const wl = word.replace(/['-]/g, '').split('').sort();
                     if (wl.length > rem.length || wl.length < minLen) continue;
                     const newRem = trySubtract(rem, wl);
-                    if (newRem) { cur.push(word); search(newRem, cur, depth + 1); cur.pop(); }
+                    if (newRem) { cur.push(word); search(newRem, cur, depth + 1, i); cur.pop(); }
                 }
             }
-            search(letters, [], 0);
+            search(letters, [], 0, 0);
             results.truncated = truncated;
             return results;
         }
@@ -1846,7 +1851,9 @@
             const results = [];
             let checked = 0;
             let truncatedCheck = false, truncatedResults = false;
-            for (const word of wordSet) {
+            // FIX: ordine deterministico - senza sort() i risultati variano tra sessioni
+            const sortedWords = Array.from(wordSet).sort();
+            for (const word of sortedWords) {
                 const clean = word.replace(/['-]/g, '');
                 if (clean.length < 6 || clean.length > 15) continue;
                 checked++;
