@@ -1,77 +1,176 @@
 # 🔤 Enigmistica
 
-Web app per anagrammi e ricerca parole italiane, utilizzabile da smartphone e desktop.
+Applicazione web per enigmisti: anagrammi, ricerca parole e giochi linguistici con vocabolario italiano.
 
-**👉 [Prova l'app](https://infingardo.github.io/Enigmistica/)**
+## Demo
+
+[**Apri l'applicazione**](https://infingardo.github.io/Enigmistica/)
 
 ## Funzionalità
 
 ### 🔄 Anagrammi
-- **Anagrammi perfetti** — tutte le lettere usate una volta
-- **Multi-parola** — combinazioni di 2-4 parole che formano l'anagramma
-- **Parole incluse** — sub-anagrammi (parole formate con un sottoinsieme delle lettere)
 
-### 🔍 Ricerca parole
-Cerca parole usando pattern con caratteri speciali:
+- **Anagrammi perfetti**: trova tutte le parole con le stesse lettere
+- **Multi-parola**: combinazioni di 2-4 parole (es. ASTRONAUTA → TARA + UOSA + N)
+- **Parole incluse**: parole più corte contenute nelle lettere date
+- **Tooltip live**: traduzione del pattern in tempo reale con stima combinazioni
 
-| Carattere | Significato |
-|-----------|-------------|
-| `.` o `?` | una lettera qualsiasi |
-| `+` | una vocale (a, e, i, o, u) |
-| `-` | una consonante |
-| `*` | zero o più lettere |
+#### Pattern per anagrammi estesi
 
-**Esempi:**
-- `cas+` → casa, case, caso, casi
-- `*zione` → parole che finiscono in "-zione"
-- `p-+ma` → prima, piuma...
-- `..ntro` → centro, contro, dentro...
-- `a*z*a` → inizia con "a", contiene "z", finisce con "a"
+Aggiungi caratteri speciali alla fine della parola per cercare anagrammi con lettere aggiuntive:
 
-### 📚 Vocabolari
-- 📘 **Ridotto** (~31k parole) — veloce, solo lemmi principali
-- 📚 **Completo** (~283k parole) — include forme flesse, plurali, coniugazioni
+| Pattern | Significato | Esempio |
+|---------|-------------|---------|
+| `+` | Aggiungi una vocale | `roma+` → anagrammi di ROMA + A/E/I/O/U |
+| `-` | Aggiungi una consonante | `roma-` → anagrammi di ROMA + B/C/D/... |
+| `?` | Aggiungi una lettera qualsiasi | `roma?` → anagrammi di ROMA + qualsiasi lettera |
+| `*` | Superanagrammi | `roma*` → parole che contengono tutte le lettere di ROMA |
 
-### ⚙️ Altre funzionalità
-- **Personalizzazione** — aggiungi o rimuovi parole dal dizionario
-- **Offline** — dopo il primo caricamento, il dizionario resta in cache
-- **Esportazione** — scarica il dizionario personalizzato
+**Combinazioni**: puoi combinare liberamente i pattern (escluso `*`):
+- `roma++` → ROMA + due vocali
+- `roma--` → ROMA + due consonanti  
+- `roma+-` → ROMA + una vocale + una consonante
+- `roma???` → ROMA + tre lettere qualsiasi
+- `casa++-` → CASA + due vocali + una consonante
 
-## Uso
+### 🔍 Cerca parole
 
-1. Apri il [sito](https://infingardo.github.io/Enigmistica/)
-2. Seleziona il vocabolario (Ridotto o Completo)
-3. Scegli la tab **Anagrammi** o **Cerca parole**
-4. Scrivi una parola o un pattern e premi Cerca
-5. Clicca su un risultato per cercarne gli anagrammi
-6. Tieni premuto (mobile) o click destro (desktop) per altre opzioni
+Ricerca con pattern flessibili:
+
+| Pattern | Significato | Esempio |
+|---------|-------------|---------|
+| `.` o `?` | Una lettera qualsiasi | `cas?` → casa, case, caso |
+| `+` | Una vocale | `c+sa` → casa, cosa |
+| `-` | Una consonante | `ca-a` → cala, cama, cana... |
+| `*` | Zero o più lettere | `*zione` → parole che finiscono in "zione" |
+
+I filtri lunghezza min/max appaiono solo quando il pattern contiene `*` (altrimenti la lunghezza è determinata).
+
+### 🎯 Quiz
+
+Allenamento interattivo sugli anagrammi:
+- Parola mostrata, trova tutti gli anagrammi
+- Timer 60 secondi con bonus tempo
+- Punteggio e serie (streak)
+- Supporto anagrammi multi-parola per parole lunghe
+- Filtri per lunghezza e numero minimo di anagrammi
+
+### 🎮 Giochi
+
+| Gioco | Descrizione | Esempio |
+|-------|-------------|---------|
+| **🔀 Cambi** | Catena di parole cambiando una lettera | MANO → MONO → MOTO |
+| **🪞 Palindromi** | Parole speculari | OTTO, RADAR, ANNA |
+| **↔️ Bifronti** | Coppie di parole una il rovescio dell'altra | ENOTECA ↔ ACETONE |
+| **✂️ Scarti** | Togli una lettera | CAMINO → CAINO |
+| **🔧 Zeppe** | Aggiungi lettera interna | CANTO → CANATO |
+| **➕ Aggiunte** | Lettera a inizio/fine | CARPA → SCARPA, CHE → CHEF |
+| **🧩 Sciarade** | Scomponi in parole | CANICOLA = CANI + COLA |
+
+## Vocabolario
+
+Due dizionari disponibili (fonte: [Enilab/BEI](http://www.enignet.it)):
+
+- **📘 Ridotto**: ~31.000 parole, caricamento veloce
+- **📚 Completo**: ~283.000 parole, esaustivo
+
+### Personalizzazione
+
+- ➕ Aggiungi parole personalizzate
+- 🗑️ Rimuovi parole indesiderate
+- ♻️ Ripristina parole rimosse
+- 📥 Esporta dizionario modificato
+- ✉️ Suggerisci parole al curatore
+- 📋 Copia risultati negli appunti
+
+## Tecnologie
+
+- HTML5 / CSS3 / JavaScript vanilla
+- IndexedDB per cache e persistenza
+- **PWA installabile** (funziona offline, si installa come app)
+- Zero dipendenze esterne
+- Responsive (mobile-friendly)
+
+## Installazione come App (PWA)
+
+### Su smartphone (Android/iOS)
+1. Apri [l'applicazione](https://infingardo.github.io/Enigmistica/) nel browser
+2. **Android (Chrome)**: Menu ⋮ → "Aggiungi a schermata Home"
+3. **iOS (Safari)**: Condividi ↑ → "Aggiungi a Home"
+
+### Su desktop (Chrome/Edge)
+1. Apri l'applicazione
+2. Clicca l'icona di installazione nella barra degli indirizzi (➕ o 📥)
+3. Oppure: Menu → "Installa Enigmistica"
+
+Una volta installata, funziona **completamente offline** dopo il primo caricamento del dizionario.
 
 ## Installazione locale
 
+1. Clona il repository:
 ```bash
-git clone https://github.com/Infingardo/Enigmistica.git
-cd Enigmistica
-# Apri index.html nel browser
+git clone https://github.com/infingardo/Enigmistica.git
 ```
 
-## File
+2. Apri `index.html` nel browser
 
-| File | Descrizione |
-|------|-------------|
-| `index.html` | App completa (HTML + CSS + JS) |
-| `dizionario_ridotto.txt` | ~31k parole |
-| `dizionario_completo.txt` | ~283k parole |
+Oppure servilo con un server locale:
+```bash
+python -m http.server 8000
+# Apri http://localhost:8000
+```
+
+## Struttura file
+
+```
+Enigmistica/
+├── index.html              # Applicazione completa
+├── manifest.json           # Manifest PWA
+├── sw.js                   # Service Worker
+├── icons/
+│   ├── icon-192.png        # Icona 192x192
+│   └── icon-512.png        # Icona 512x512
+├── dizionario_ridotto.txt  # Vocabolario ridotto
+├── dizionario_completo.txt # Vocabolario completo
+└── README.md
+```
+
+## Note tecniche
+
+### Limiti configurabili
+
+I limiti di ricerca sono centralizzati in `CONFIG`:
+
+| Parametro | Valore | Descrizione |
+|-----------|--------|-------------|
+| `maxPatternResults` | 1000 | Risultati max per ricerca pattern |
+| `maxMultiWordResults` | 500 | Anagrammi multi-parola max |
+| `maxPatternCombinations` | 50000 | Combinazioni max per pattern anagrammi |
+| `maxCambiNodes` | 10000 | Nodi BFS max per catena cambi |
+| `maxSciaradeInverseCheck` | 5000 | Parole analizzate per sciarade inverse |
+| `maxSuperanagramsPerGroup` | 200 | Superanagrammi visualizzati per gruppo |
+
+Quando un limite viene raggiunto, appare un warning giallo.
+
+### Apostrofi e trattini
+
+Le parole con apostrofo o trattino sono trattate come forme unite:
+- `dell'arte` → `dellarte`
+- `week-end` → `weekend`
+
+Scelta necessaria per gli anagrammi, ma può influire semanticamente su alcuni giochi (sciarade, bifronti).
+
+### Ottimizzazioni
+
+- **Pre-indice `wordsByLength`**: accelera la ricerca Cambi
+- **Pruning in multi-parola**: taglia rami morti quando `remaining < minLen * wordsNeeded`
+- **IndexedDB**: dizionario scaricato una volta e cachato nel browser
 
 ## Crediti
 
-Il vocabolario proviene da **[Enilab](http://www.enignet.it/software.html)**, software gratuito per l'enigmistica sviluppato da Giulio Ferrari e distribuito dalla **[Biblioteca Enigmistica Italiana (BEI)](http://www.enignet.it/)**.
+- Vocabolario: [Enilab/BEI](http://www.enignet.it) - Biblioteca Enigmistica Italiana
+- Sviluppo: [infingardo](https://github.com/infingardo)
 
-## Licenza
+## License
 
-Il codice dell'app è rilasciato sotto licenza MIT.
-
-Il vocabolario Enilab è freeware per uso personale e non commerciale (vedi [licenza Enilab](http://www.enignet.it/software.html)).
-
-## Autore
-
-Filippo Bianchi (kc8)
+MIT License - Uso libero con attribuzione.
