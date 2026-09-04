@@ -598,6 +598,9 @@
                 <button class="game-btn" onclick="selectGame('aggiunte')">➕ Aggiunte</button>
                 <button class="game-btn" onclick="selectGame('sciarade')">🧩 Sciarade</button>
             </div>
+            <div class="game-selector" style="margin-top: -12px;">
+                <button class="game-btn" onclick="selectGame('scramble')">🔤 Scramble</button>
+            </div>
             
             <div class="game-content active" id="game-cambi">
                 <div class="hint-box"><strong>🔀 Cambi</strong><br>Trasforma una parola in un'altra cambiando una lettera alla volta.</div>
@@ -658,6 +661,107 @@
                 </div>
                 <button class="btn-primary" onclick="findSciarade()" id="btnSciarade" disabled style="width: 100%;">🧩 Scomponi</button>
                 <button class="btn-secondary" onclick="findSciaradeInverse()" id="btnSciaradeInv" disabled style="width: 100%; margin-top: 8px;">🔍 Cerca nel dizionario</button>
+            </div>
+
+            <div class="game-content" id="game-scramble">
+                <div id="scrambleSetup">
+                    <div class="hint-box"><strong>🔤 Scramble</strong><br>Indovina la parola nascosta nell'anagramma!</div>
+
+                    <div class="options">
+                        <div class="option">
+                            <label for="selScrambleDifficulty">Difficoltà:</label>
+                            <select id="selScrambleDifficulty">
+                                <option value="easy">Facile (4-6 lettere)</option>
+                                <option value="medium" selected>Medio (7-9 lettere)</option>
+                                <option value="hard">Difficile (10+ lettere)</option>
+                            </select>
+                        </div>
+                        <div class="option">
+                            <input type="checkbox" id="chkScrambleTimer" checked>
+                            <label for="chkScrambleTimer">Timer (60s)</label>
+                        </div>
+                    </div>
+
+                    <button class="btn-success" onclick="startScramble()" id="btnStartScramble" disabled style="width: 100%;">▶️ Inizia</button>
+
+                    <div id="scrambleStats" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
+                        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Best Score</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #f39c12;" id="scrambleBestScore">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Partite</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #3498db;" id="scrambleGamesPlayed">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="scrambleGame" class="hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <span style="font-size: 1.2em; font-weight: bold; color: #27ae60;">🏆 <span id="scrambleScore">0</span></span>
+                            <span style="margin-left: 15px; font-size: 1em; color: #e67e22;">🔥 <span id="scrambleStreak">0</span></span>
+                        </div>
+                        <div id="scrambleTimerDisplay" style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">⏱️ <span id="scrambleTimeLeft">60</span>s</div>
+                    </div>
+
+                    <div style="background: #ecf0f1; border-radius: 12px; padding: 30px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px;">Riordina le lettere:</div>
+                        <div id="scrambledLetters" style="font-size: 2.5em; font-weight: bold; color: #2c3e50; letter-spacing: 8px; font-family: monospace;"></div>
+                        <div style="font-size: 0.85em; color: #95a5a6; margin-top: 10px;" id="scrambleLengthHint"></div>
+                    </div>
+
+                    <input type="text" id="scrambleAnswer" placeholder="La tua risposta..." onkeyup="handleScrambleKeyUp(event)" style="text-transform: lowercase;">
+
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-primary" onclick="checkScrambleAnswer()" style="flex: 2;">✓ Verifica</button>
+                        <button class="btn-warning btn-small" onclick="giveScrambleHint()" id="btnScrambleHint">💡 Aiuto</button>
+                        <button class="btn-secondary btn-small" onclick="skipScrambleWord()">⏭️ Salta</button>
+                    </div>
+
+                    <div id="scrambleFeedback" class="hidden" style="margin-top: 15px; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold;"></div>
+
+                    <button class="btn-danger btn-small" onclick="endScramble()" style="width: 100%; margin-top: 15px;">🚪 Termina</button>
+                </div>
+
+                <div id="scrambleResults" class="hidden">
+                    <h3 style="text-align: center; margin-bottom: 20px;">🎉 Partita Terminata!</h3>
+
+                    <div style="background: #ecf0f1; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div style="font-size: 3em; font-weight: bold; color: #27ae60;" id="scrambleFinalScore">0</div>
+                            <div style="font-size: 1em; color: #7f8c8d;">Punteggio Finale</div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Corrette</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #27ae60;" id="scrambleCorrect">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Sbagliate</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #e74c3c;" id="scrambleWrong">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Saltate</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #95a5a6;" id="scrambleSkipped">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Streak Max</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #e67e22;" id="scrambleMaxStreak">0</div>
+                            </div>
+                        </div>
+
+                        <div id="scrambleNewRecord" class="hidden" style="margin-top: 20px; padding: 12px; background: #f39c12; color: white; border-radius: 8px; text-align: center; font-weight: bold;">
+                            🏆 Nuovo Record! 🏆
+                        </div>
+                    </div>
+
+                    <button class="btn-success" onclick="startScramble()" style="width: 100%;">🔄 Gioca Ancora</button>
+                    <button class="btn-secondary" onclick="backToScrambleSetup()" style="width: 100%; margin-top: 10px;">⚙️ Cambia Impostazioni</button>
+                </div>
             </div>
         </div>
     </div>
@@ -870,11 +974,15 @@
             currentGame = game;
             document.querySelectorAll('.game-btn').forEach(btn => {
                 const t = btn.textContent.toLowerCase();
-                btn.classList.toggle('active', (game === 'cambi' && t.includes('cambi')) || (game === 'palindromi' && t.includes('palindromi')) || (game === 'bifronti' && t.includes('bifronti')) || (game === 'scarti' && t.includes('scarti')) || (game === 'zeppe' && t.includes('zeppe')) || (game === 'aggiunte' && t.includes('aggiunte')) || (game === 'sciarade' && t.includes('sciarade')));
+                btn.classList.toggle('active', (game === 'cambi' && t.includes('cambi')) || (game === 'palindromi' && t.includes('palindromi')) || (game === 'bifronti' && t.includes('bifronti')) || (game === 'scarti' && t.includes('scarti')) || (game === 'zeppe' && t.includes('zeppe')) || (game === 'aggiunte' && t.includes('aggiunte')) || (game === 'sciarade' && t.includes('sciarade')) || (game === 'scramble' && t.includes('scramble')));
             });
             document.querySelectorAll('.game-content').forEach(g => g.classList.remove('active'));
             document.getElementById(`game-${game}`).classList.add('active');
             document.getElementById('resultsCard').classList.add('hidden');
+
+            if (game === 'scramble') {
+                loadScrambleStats();
+            }
         }
         
         function openDB() {
@@ -1889,7 +1997,281 @@
             }
             card.classList.remove('hidden');
         }
-        
+
+        // ===== SCRAMBLE GAME FUNCTIONALITY =====
+        let scrambleState = {
+            active: false,
+            currentWord: null,
+            scrambled: null,
+            score: 0,
+            streak: 0,
+            maxStreak: 0,
+            correct: 0,
+            wrong: 0,
+            skipped: 0,
+            hintsUsed: 0,
+            revealedLetters: [],
+            timer: null,
+            timeLeft: 60,
+            timerEnabled: true,
+            difficulty: 'medium'
+        };
+
+        function loadScrambleStats() {
+            const bestScore = localStorage.getItem('scrambleBestScore') || 0;
+            const gamesPlayed = localStorage.getItem('scrambleGamesPlayed') || 0;
+            document.getElementById('scrambleBestScore').textContent = bestScore;
+            document.getElementById('scrambleGamesPlayed').textContent = gamesPlayed;
+            document.getElementById('btnStartScramble').disabled = !wordList || wordList.length === 0;
+        }
+
+        function getScrambleWord() {
+            const difficulty = document.getElementById('selScrambleDifficulty').value;
+            let minLen, maxLen;
+            if (difficulty === 'easy') {
+                minLen = 4; maxLen = 6;
+            } else if (difficulty === 'medium') {
+                minLen = 7; maxLen = 9;
+            } else {
+                minLen = 10; maxLen = 99;
+            }
+
+            const filtered = wordList.filter(w => {
+                const clean = w.replace(/['-]/g, '');
+                return clean.length >= minLen && clean.length <= maxLen;
+            });
+
+            if (filtered.length === 0) return null;
+            return filtered[Math.floor(Math.random() * filtered.length)];
+        }
+
+        function scrambleWordLetters(word) {
+            const clean = word.replace(/['-]/g, '');
+            const letters = clean.split('');
+            for (let i = letters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [letters[i], letters[j]] = [letters[j], letters[i]];
+            }
+            const scrambled = letters.join('');
+            if (scrambled === clean && clean.length > 1) {
+                return scrambleWordLetters(word);
+            }
+            return scrambled;
+        }
+
+        function startScramble() {
+            if (!wordList || wordList.length === 0) {
+                alert('Carica prima un dizionario!');
+                return;
+            }
+
+            scrambleState = {
+                active: true,
+                score: 0,
+                streak: 0,
+                maxStreak: 0,
+                correct: 0,
+                wrong: 0,
+                skipped: 0,
+                hintsUsed: 0,
+                revealedLetters: [],
+                timeLeft: 60,
+                timerEnabled: document.getElementById('chkScrambleTimer').checked,
+                difficulty: document.getElementById('selScrambleDifficulty').value
+            };
+
+            document.getElementById('scrambleSetup').classList.add('hidden');
+            document.getElementById('scrambleResults').classList.add('hidden');
+            document.getElementById('scrambleGame').classList.remove('hidden');
+            document.getElementById('scrambleTimerDisplay').classList.toggle('hidden', !scrambleState.timerEnabled);
+
+            nextScrambleWord();
+        }
+
+        function nextScrambleWord() {
+            const word = getScrambleWord();
+            if (!word) {
+                alert('Nessuna parola disponibile!');
+                endScramble();
+                return;
+            }
+
+            scrambleState.currentWord = word;
+            scrambleState.scrambled = scrambleWordLetters(word);
+            scrambleState.hintsUsed = 0;
+            scrambleState.revealedLetters = [];
+
+            document.getElementById('scrambledLetters').textContent = scrambleState.scrambled.toUpperCase().split('').join(' ');
+            document.getElementById('scrambleLengthHint').textContent = `${scrambleState.currentWord.length} lettere`;
+            document.getElementById('scrambleAnswer').value = '';
+            document.getElementById('scrambleAnswer').focus();
+            document.getElementById('scrambleFeedback').classList.add('hidden');
+            document.getElementById('btnScrambleHint').disabled = false;
+
+            updateScrambleDisplay();
+
+            if (scrambleState.timerEnabled) {
+                clearInterval(scrambleState.timer);
+                scrambleState.timeLeft = 60;
+                updateScrambleTimer();
+                scrambleState.timer = setInterval(() => {
+                    scrambleState.timeLeft--;
+                    updateScrambleTimer();
+                    if (scrambleState.timeLeft <= 0) {
+                        clearInterval(scrambleState.timer);
+                        showScrambleFeedback('⏰ Tempo scaduto! Era: ' + scrambleState.currentWord, 'error');
+                        scrambleState.wrong++;
+                        scrambleState.streak = 0;
+                        setTimeout(nextScrambleWord, 2000);
+                    }
+                }, 1000);
+            }
+        }
+
+        function checkScrambleAnswer() {
+            const answer = document.getElementById('scrambleAnswer').value.trim().toLowerCase();
+            const correct = scrambleState.currentWord.toLowerCase();
+
+            if (!answer) return;
+
+            if (answer === correct) {
+                const basePoints = 10;
+                const timeBonus = scrambleState.timerEnabled ? Math.floor(scrambleState.timeLeft / 10) : 0;
+                const streakBonus = scrambleState.streak * 2;
+                const hintPenalty = scrambleState.hintsUsed * 2;
+                const points = Math.max(1, basePoints + timeBonus + streakBonus - hintPenalty);
+
+                scrambleState.score += points;
+                scrambleState.correct++;
+                scrambleState.streak++;
+                scrambleState.maxStreak = Math.max(scrambleState.maxStreak, scrambleState.streak);
+
+                showScrambleFeedback(`✓ Esatto! +${points} punti 🎉`, 'success');
+                clearInterval(scrambleState.timer);
+                setTimeout(nextScrambleWord, 1500);
+            } else {
+                scrambleState.wrong++;
+                scrambleState.streak = 0;
+                showScrambleFeedback(`✗ Sbagliato! Era: ${scrambleState.currentWord}`, 'error');
+                clearInterval(scrambleState.timer);
+                setTimeout(nextScrambleWord, 2500);
+            }
+
+            updateScrambleDisplay();
+        }
+
+        function giveScrambleHint() {
+            if (scrambleState.hintsUsed >= 2) {
+                alert('Massimo 2 aiuti per parola!');
+                return;
+            }
+
+            const word = scrambleState.currentWord.replace(/['-]/g, '');
+            const unrevealed = [];
+
+            for (let i = 0; i < word.length; i++) {
+                if (!scrambleState.revealedLetters.includes(i)) {
+                    unrevealed.push(i);
+                }
+            }
+
+            if (unrevealed.length === 0) return;
+
+            const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+            scrambleState.revealedLetters.push(randomIndex);
+            scrambleState.hintsUsed++;
+
+            let hintStr = '';
+            for (let i = 0; i < word.length; i++) {
+                if (scrambleState.revealedLetters.includes(i)) {
+                    hintStr += word[i].toUpperCase() + ' ';
+                } else {
+                    hintStr += '_ ';
+                }
+            }
+
+            document.getElementById('scrambledLetters').textContent = hintStr.trim();
+
+            if (scrambleState.hintsUsed >= 2) {
+                document.getElementById('btnScrambleHint').disabled = true;
+            }
+
+            showScrambleFeedback(`💡 Lettera rivelata! (-2 punti)`, 'warning');
+        }
+
+        function skipScrambleWord() {
+            scrambleState.skipped++;
+            scrambleState.streak = 0;
+            showScrambleFeedback(`⏭️ Saltata! Era: ${scrambleState.currentWord}`, 'warning');
+            clearInterval(scrambleState.timer);
+            setTimeout(nextScrambleWord, 2000);
+        }
+
+        function endScramble() {
+            clearInterval(scrambleState.timer);
+            scrambleState.active = false;
+
+            const gamesPlayed = parseInt(localStorage.getItem('scrambleGamesPlayed') || 0) + 1;
+            localStorage.setItem('scrambleGamesPlayed', gamesPlayed);
+
+            const bestScore = parseInt(localStorage.getItem('scrambleBestScore') || 0);
+            const isNewRecord = scrambleState.score > bestScore;
+
+            if (isNewRecord) {
+                localStorage.setItem('scrambleBestScore', scrambleState.score);
+            }
+
+            document.getElementById('scrambleGame').classList.add('hidden');
+            document.getElementById('scrambleResults').classList.remove('hidden');
+
+            document.getElementById('scrambleFinalScore').textContent = scrambleState.score;
+            document.getElementById('scrambleCorrect').textContent = scrambleState.correct;
+            document.getElementById('scrambleWrong').textContent = scrambleState.wrong;
+            document.getElementById('scrambleSkipped').textContent = scrambleState.skipped;
+            document.getElementById('scrambleMaxStreak').textContent = scrambleState.maxStreak;
+
+            document.getElementById('scrambleNewRecord').classList.toggle('hidden', !isNewRecord);
+
+            loadScrambleStats();
+        }
+
+        function backToScrambleSetup() {
+            document.getElementById('scrambleResults').classList.add('hidden');
+            document.getElementById('scrambleSetup').classList.remove('hidden');
+        }
+
+        function updateScrambleDisplay() {
+            document.getElementById('scrambleScore').textContent = scrambleState.score;
+            document.getElementById('scrambleStreak').textContent = scrambleState.streak;
+        }
+
+        function updateScrambleTimer() {
+            const el = document.getElementById('scrambleTimeLeft');
+            el.textContent = scrambleState.timeLeft;
+
+            if (scrambleState.timeLeft <= 10) {
+                el.style.color = '#e74c3c';
+            } else if (scrambleState.timeLeft <= 30) {
+                el.style.color = '#f39c12';
+            } else {
+                el.style.color = '#27ae60';
+            }
+        }
+
+        function showScrambleFeedback(message, type) {
+            const el = document.getElementById('scrambleFeedback');
+            el.textContent = message;
+            el.className = '';
+            el.classList.add('info-message', type);
+            el.classList.remove('hidden');
+        }
+
+        function handleScrambleKeyUp(e) {
+            if (e.key === 'Enter') {
+                checkScrambleAnswer();
+            }
+        }
+
         // Service Worker per PWA - attivo solo su GitHub Pages
         if ('serviceWorker' in navigator && location.hostname.includes('github.io')) {
             window.addEventListener('load', () => {
