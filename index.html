@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anagrammi e Ricerca Parole</title>
+    <title>Enigmistica - Anagrammi e Giochi</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Enigmistica">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -97,6 +106,12 @@
         .options { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .option { display: flex; align-items: center; gap: 6px; }
         .option label { font-size: 0.9em; color: #555; }
+        
+        .options-group { margin-bottom: 15px; }
+        .option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        .sub-option { margin-left: 8px; padding-left: 8px; border-left: 2px solid #ecf0f1; color: #7f8c8d; }
+        .sub-option label { font-size: 0.85em; color: #7f8c8d; }
+        .sub-option select { font-size: 0.85em; }
         
         select { padding: 6px 10px; border: 2px solid #ecf0f1; border-radius: 6px; font-size: 0.9em; }
         
@@ -233,51 +248,259 @@
         .credits { font-size: 0.75em; color: #95a5a6; text-align: center; margin-top: 5px; }
         .credits a { color: #7f8c8d; }
         
+        .quiz-word { text-align: center; font-size: 2.5em; font-weight: bold; color: #2c3e50; letter-spacing: 0.1em; margin: 20px 0; text-transform: uppercase; }
+        .quiz-prompt { text-align: center; color: #7f8c8d; margin-bottom: 20px; }
+        .quiz-stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; }
+        .quiz-stat { text-align: center; }
+        .quiz-stat-value { font-size: 1.8em; font-weight: bold; color: #3498db; }
+        .quiz-stat-value.warning { color: #e74c3c; animation: pulse 0.5s ease infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .quiz-stat-label { font-size: 0.8em; color: #7f8c8d; }
+        .quiz-found { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; min-height: 40px; }
+        .quiz-found-word { background: #27ae60; color: white; padding: 8px 14px; border-radius: 20px; font-size: 0.95em; animation: pop 0.3s ease; }
+        .quiz-found-word.missed { background: #e74c3c; opacity: 0.7; }
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        .quiz-feedback { text-align: center; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: 500; min-height: 44px; }
+        .quiz-feedback.correct { background: #e8f6f3; color: #27ae60; }
+        .quiz-feedback.wrong { background: #fdedec; color: #e74c3c; }
+        .quiz-feedback.duplicate { background: #fef9e7; color: #f39c12; }
+        .quiz-feedback.empty { background: transparent; }
+        .quiz-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .quiz-progress { background: #ecf0f1; border-radius: 20px; height: 8px; margin: 15px 0; overflow: hidden; }
+        .quiz-progress-fill { height: 100%; background: linear-gradient(90deg, #27ae60, #2ecc71); transition: width 0.3s ease; }
+        
+        .game-selector { display: flex; gap: 8px; margin-bottom: 20px; }
+        .game-btn { flex: 1; padding: 10px; border: 2px solid #ecf0f1; border-radius: 8px; background: white; cursor: pointer; font-size: 0.9em; transition: all 0.2s; }
+        .game-btn:hover { border-color: #9b59b6; background: #f5eef8; }
+        .game-btn.active { border-color: #9b59b6; background: #9b59b6; color: white; }
+        .game-content { display: none; }
+        .game-content.active { display: block; }
+        .cambi-inputs { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .cambi-input { flex: 1; text-transform: uppercase; }
+        .cambi-arrow { font-size: 1.5em; color: #9b59b6; font-weight: bold; }
+        .cambi-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 15px; }
+        .cambi-step { background: #9b59b6; color: white; padding: 8px 14px; border-radius: 20px; font-weight: 500; text-transform: uppercase; }
+        .cambi-step.start { background: #27ae60; }
+        .cambi-step.end { background: #e74c3c; }
+        .cambi-step-arrow { color: #9b59b6; font-weight: bold; }
+        .bifronte-pair { display: inline-flex; align-items: center; gap: 8px; background: #f5eef8; padding: 8px 14px; border-radius: 20px; margin: 4px; }
+        .bifronte-arrow { color: #9b59b6; }
+        
+        .pattern-tooltip {
+            background: #e8f6f3;
+            border-left: 3px solid #1abc9c;
+            padding: 8px 12px;
+            margin: -10px 0 15px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85em;
+            color: #16a085;
+        }
+        
+        .truncated-warning {
+            background: #fef9e7;
+            border-left: 3px solid #f39c12;
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85em;
+            color: #9a7b0a;
+        }
+        
+        .copy-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .copy-btn:hover { background: #7f8c8d; }
+        .copy-btn.copied { background: #27ae60; }
+        
+        /* ==================== MOBILE RESPONSIVE ==================== */
         @media (max-width: 600px) {
-            body { padding: 10px; }
-            .card { padding: 15px; }
-            .options { flex-direction: column; gap: 10px; }
-            .status-bar { flex-direction: column; align-items: stretch; }
-            .btn-group { flex-direction: column; }
-            button { width: 100%; }
-            .modal-buttons { flex-direction: column; }
-            .tab { padding: 10px 8px; font-size: 0.85em; }
+            body { padding: 12px; font-size: 16px; }
+            .card { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .subtitle { font-size: 1em; margin-bottom: 20px; }
+            
+            /* Tabs più grandi per touch */
+            .tabs { border-radius: 10px; }
+            .tab { padding: 14px 8px; font-size: 0.9em; min-height: 48px; }
+            
+            /* Input più grandi */
+            input[type="text"] { 
+                font-size: 1.1em; 
+                padding: 16px; 
+                border-radius: 10px;
+            }
+            
+            /* Bottoni touch-friendly (min 48px) */
+            button { 
+                width: 100%; 
+                min-height: 48px; 
+                font-size: 1em;
+                padding: 14px 16px;
+                border-radius: 10px;
+            }
+            .btn-small { 
+                min-height: 44px; 
+                font-size: 0.9em;
+                padding: 12px 14px;
+            }
+            
+            /* Options più spaziose */
+            .options { 
+                flex-direction: column; 
+                gap: 12px; 
+            }
+            .option { 
+                padding: 8px 0;
+                font-size: 1em;
+            }
+            .option label { font-size: 1em; }
+            .option-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .sub-option { margin-left: 28px; border-left: none; padding-left: 0; }
+            select { 
+                padding: 10px 14px; 
+                font-size: 1em;
+                min-height: 44px;
+                border-radius: 8px;
+            }
+            
+            /* Checkbox più grandi */
+            .option input[type="checkbox"] {
+                width: 22px;
+                height: 22px;
+            }
+            
+            /* Status e gruppi */
+            .status-bar { flex-direction: column; align-items: stretch; gap: 12px; }
+            .btn-group { flex-direction: column; gap: 8px; }
+            .status { font-size: 1em; text-align: center; }
+            
+            /* Hint box più leggibili */
+            .hint-box { 
+                font-size: 0.95em; 
+                padding: 14px;
+                line-height: 1.6;
+            }
+            .hint-box code { 
+                padding: 4px 8px; 
+                font-size: 1em;
+            }
+            .hint { font-size: 0.9em; line-height: 1.5; }
+            
+            /* Risultati touch-friendly */
+            .result-word { 
+                padding: 12px 16px; 
+                font-size: 1em;
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                border-radius: 22px;
+            }
+            .results-grid { gap: 10px; }
+            .results-section h4 { font-size: 1em; padding-bottom: 8px; }
+            .length-label { font-size: 0.9em; margin-bottom: 8px; }
+            .results-container { max-height: 60vh; }
+            
+            /* Quiz ottimizzato */
+            .quiz-word { font-size: 2em; letter-spacing: 0.15em; }
+            .quiz-prompt { font-size: 1em; }
+            .quiz-stats { gap: 20px; }
+            .quiz-stat-value { font-size: 1.6em; }
+            .quiz-stat-label { font-size: 0.9em; }
+            .quiz-found-word { 
+                padding: 10px 14px; 
+                font-size: 1em;
+            }
+            .quiz-feedback { 
+                font-size: 1em; 
+                padding: 14px;
+                min-height: 52px;
+            }
+            .quiz-buttons { flex-direction: column; gap: 10px; }
+            .quiz-buttons button { width: 100%; }
+            
+            /* Giochi */
+            .game-selector { 
+                flex-direction: column; 
+                gap: 8px;
+            }
+            .game-btn { 
+                min-height: 48px; 
+                font-size: 1em;
+                padding: 12px;
+            }
+            .cambi-inputs { flex-direction: column; gap: 8px; }
+            .cambi-arrow { transform: rotate(90deg); font-size: 1.2em; }
+            .cambi-step { padding: 10px 16px; font-size: 1em; }
+            .bifronte-pair { padding: 10px 14px; font-size: 1em; }
+            
+            /* Dizionario selector */
+            .dict-selector { flex-direction: column; gap: 10px; }
+            .dict-btn { 
+                min-height: 60px; 
+                padding: 14px;
+            }
+            .dict-btn-title { font-size: 1.1em; }
+            .dict-btn-info { font-size: 0.9em; }
+            
+            /* Modal */
+            .modal { padding: 20px; }
+            .modal h3 { font-size: 1.2em; }
+            .modal-buttons { flex-direction: column; gap: 10px; }
+            
+            /* Context menu */
+            .context-menu-item { 
+                padding: 14px 18px; 
+                font-size: 1em;
+                min-height: 48px;
+            }
+            
+            /* Credits e dettagli */
+            .credits { font-size: 0.85em; }
+            .dict-options summary { font-size: 1em; padding: 8px 0; }
+            .custom-words-count { font-size: 0.95em; }
+            
+            /* Tooltip e warning */
+            .pattern-tooltip { font-size: 0.9em; padding: 10px 14px; }
+            .truncated-warning { font-size: 0.9em; padding: 10px 14px; }
+            .copy-btn { padding: 8px 14px; font-size: 0.9em; margin-left: 0; margin-top: 8px; width: 100%; }
+            .results-header { flex-wrap: wrap; }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 380px) {
+            body { padding: 8px; }
+            .card { padding: 12px; }
+            h1 { font-size: 1.3em; }
+            .quiz-word { font-size: 1.6em; }
+            .tab { font-size: 0.8em; padding: 12px 6px; }
         }
     </style>
 </head>
 <body>
-    <h1>🔤 Enigmistica</h1>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+        <h1 style="margin: 0;">🔤 Enigmistica</h1>
+        <button onclick="showHelp()" style="background: #3498db; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.1em; cursor: pointer; font-weight: bold;">?</button>
+    </div>
     <p class="subtitle">Anagrammi e ricerca parole italiane</p>
     
     <div class="card">
         <div class="status-bar">
-            <div class="status" id="dictStatus">
-                <span id="statusText">⏳ Seleziona un vocabolario...</span>
-            </div>
-            <div class="btn-group">
-                <button class="btn-success btn-small" onclick="showAddWordModal()" id="btnAddWord" disabled>➕ Aggiungi</button>
-            </div>
+            <div class="status" id="dictStatus"><span id="statusText">⏳ Seleziona un vocabolario...</span></div>
+            <div class="btn-group"><button class="btn-success btn-small" onclick="showAddWordModal()" id="btnAddWord" disabled>➕ Aggiungi</button></div>
         </div>
-        
         <div class="dict-selector" id="dictSelector">
-            <button class="dict-btn" onclick="loadDict('ridotto')">
-                <div class="dict-btn-title">📘 Ridotto</div>
-                <div class="dict-btn-info">~31k parole • Veloce</div>
-            </button>
-            <button class="dict-btn" onclick="loadDict('completo')">
-                <div class="dict-btn-title">📚 Completo</div>
-                <div class="dict-btn-info">~283k parole • Esaustivo</div>
-            </button>
+            <button class="dict-btn" onclick="loadDict('ridotto')"><div class="dict-btn-title">📘 Ridotto</div><div class="dict-btn-info">~31k parole • Veloce</div></button>
+            <button class="dict-btn" onclick="loadDict('completo')"><div class="dict-btn-title">📚 Completo</div><div class="dict-btn-info">~283k parole • Esaustivo</div></button>
         </div>
-        
-        <div id="loadingIndicator" class="loading-box hidden">
-            <div class="spinner"></div>
-            <div id="loadingText">Caricamento...</div>
-            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
-        </div>
-        
+        <div id="loadingIndicator" class="loading-box hidden"><div class="spinner"></div><div id="loadingText">Caricamento...</div><div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div></div>
         <div id="infoMessage" class="info-message hidden"></div>
-        
         <details class="dict-options hidden" id="dictOptions">
             <summary>Opzioni dizionario</summary>
             <div class="dict-options-content">
@@ -288,178 +511,263 @@
             </div>
             <div class="custom-words-count" id="customWordsCount"></div>
         </details>
-        
         <p class="credits">Vocabolario: <a href="http://www.enignet.it" target="_blank">Enilab/BEI</a></p>
     </div>
     
     <div class="card" id="searchCard">
         <div class="tabs">
             <button class="tab active" onclick="switchTab('anagrammi')">🔄 Anagrammi</button>
-            <button class="tab" onclick="switchTab('ricerca')">🔍 Cerca parole</button>
-            <button class="tab" onclick="switchTab('quiz')">🎮 Quiz</button>
+            <button class="tab" onclick="switchTab('ricerca')">🔍 Cerca</button>
+            <button class="tab" onclick="switchTab('quiz')">🎯 Quiz</button>
+            <button class="tab" onclick="switchTab('giochi')">🎮 Giochi</button>
         </div>
         
-        <!-- Tab Anagrammi -->
         <div class="tab-content active" id="tab-anagrammi">
-            <input type="text" id="inputWord" placeholder="Scrivi una parola..." onkeyup="handleKeyUp(event, 'anagrammi')" disabled>
-            
-            <div class="options">
-                <div class="option"><input type="checkbox" id="chkMulti" checked><label for="chkMulti">Multi-parola</label></div>
-                <div class="option"><input type="checkbox" id="chkPartial" checked><label for="chkPartial">Parole incluse</label></div>
-                <div class="option"><label for="selMaxWords">Max:</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
-                <div class="option"><label for="selMinLen">Min:</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
-            </div>
-            
-            <button class="btn-primary" onclick="findAnagrams()" id="btnSearch" disabled style="width: 100%;">🔍 Cerca anagrammi</button>
-            <p class="hint">💡 Tieni premuto su una parola per rimuoverla</p>
-        </div>
-        
-        <!-- Tab Ricerca -->
-        <div class="tab-content" id="tab-ricerca">
+            <input type="text" id="inputWord" placeholder="Scrivi una parola..." onkeyup="handleKeyUp(event, 'anagrammi')" oninput="updatePatternTooltip()" disabled>
+            <div id="patternTooltip" class="pattern-tooltip hidden"></div>
             <div class="hint-box">
                 <strong>Pattern:</strong> 
-                <code>.</code> o <code>?</code> = una lettera &nbsp;
-                <code>+</code> = vocale &nbsp;
-                <code>-</code> = consonante &nbsp;
-                <code>*</code> = più lettere
+                <code>+</code> = +vocale &nbsp;
+                <code>-</code> = +consonante &nbsp;
+                <code>?</code> = +lettera &nbsp;
+                <code>*</code> = superanagrammi
             </div>
-            
+            <div class="options-group">
+                <div class="option-row">
+                    <div class="option"><input type="checkbox" id="chkMulti" checked onchange="updateAnagramFiltersVisibility()"><label for="chkMulti">Multi-parola</label></div>
+                    <div class="option sub-option" id="optMaxWords"><label for="selMaxWords">max</label><select id="selMaxWords"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select></div>
+                </div>
+                <div class="option-row">
+                    <div class="option"><input type="checkbox" id="chkPartial" checked onchange="updateAnagramFiltersVisibility()"><label for="chkPartial">Parole incluse</label></div>
+                    <div class="option sub-option" id="optMinLen"><label for="selMinLen">min</label><select id="selMinLen"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select><label>lettere</label></div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="findAnagrams()" id="btnSearch" disabled style="width: 100%;">🔍 Cerca anagrammi</button>
+            <p class="hint">💡 Esempi: <code>roma+</code> (roma+vocale), <code>roma+-</code> (roma+vocale+cons), <code>roma*</code> (superanagrammi)</p>
+        </div>
+        
+        <div class="tab-content" id="tab-ricerca">
+            <div class="hint-box"><strong>Pattern:</strong> <code>.</code> o <code>?</code> = una lettera &nbsp;<code>+</code> = vocale &nbsp;<code>-</code> = consonante &nbsp;<code>*</code> = più lettere</div>
             <input type="text" id="inputPattern" placeholder="Es: cas+, *zione, p-+ma..." onkeyup="handleKeyUp(event, 'ricerca')" disabled>
-            
-            <div class="options">
-                <div class="option">
-                    <label for="selMinLenSearch">Lunghezza min:</label>
-                    <select id="selMinLenSearch">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3" selected>3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                </div>
-                <div class="option">
-                    <label for="selMaxLenSearch">max:</label>
-                    <select id="selMaxLenSearch">
-                        <option value="10">10</option>
-                        <option value="15" selected>15</option>
-                        <option value="20">20</option>
-                        <option value="99">∞</option>
-                    </select>
-                </div>
+            <div class="options" id="patternLengthOptions">
+                <div class="option"><label for="selMinLenSearch">Lunghezza min:</label><select id="selMinLenSearch"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+                <div class="option"><label for="selMaxLenSearch">max:</label><select id="selMaxLenSearch"><option value="10">10</option><option value="15" selected>15</option><option value="20">20</option><option value="99">∞</option></select></div>
             </div>
-            
             <button class="btn-primary" onclick="searchPattern()" id="btnPattern" disabled style="width: 100%;">🔍 Cerca parole</button>
             <p class="hint">Es: <code>cas+</code> → casa, case, caso | <code>*mente</code> → parole che finiscono in "mente"</p>
         </div>
-
-        <!-- Tab Quiz -->
+        
         <div class="tab-content" id="tab-quiz">
-            <div id="quizContainer">
-                <div id="quizSetup">
-                    <h3 style="text-align: center; margin-bottom: 20px;">🎮 Quiz Anagrammi</h3>
-                    <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">Indovina la parola nascosta nell'anagramma!</p>
+            <div id="quizStart">
+                <div class="hint-box"><strong>🎯 Quiz Anagrammi</strong><br>Ti mostro una parola, tu trovi tutti i suoi anagrammi!<br><span style="font-size: 0.9em; color: #7f8c8d;">Scrivi un anagramma alla volta e premi Invio.</span></div>
+                <div class="options">
+                    <div class="option"><label for="selQuizMinLen">Lunghezza min:</label><select id="selQuizMinLen"><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option></select></div>
+                    <div class="option"><label for="selQuizMaxLen">max:</label><select id="selQuizMaxLen"><option value="6">6</option><option value="7">7</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option><option value="14">14</option></select></div>
+                    <div class="option"><label for="selQuizMinAnagrams">Min anagrammi:</label><select id="selQuizMinAnagrams"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></div>
+                </div>
+                <button class="btn-success" onclick="startQuiz()" id="btnStartQuiz" disabled style="width: 100%;">🎯 Inizia Quiz</button>
+            </div>
+            <div id="quizGame" class="hidden">
+                <div class="quiz-stats">
+                    <div class="quiz-stat"><div class="quiz-stat-value" id="quizTimer">60</div><div class="quiz-stat-label">Secondi</div></div>
+                    <div class="quiz-stat"><div class="quiz-stat-value" id="quizStreak">0</div><div class="quiz-stat-label">Serie</div></div>
+                    <div class="quiz-stat"><div class="quiz-stat-value" id="quizScore">0</div><div class="quiz-stat-label">Punti</div></div>
+                </div>
+                <div class="quiz-word" id="quizWord">PAROLA</div>
+                <div class="quiz-prompt" id="quizPrompt">Trova X anagrammi</div>
+                <div class="quiz-progress"><div class="quiz-progress-fill" id="quizProgressFill" style="width: 0%"></div></div>
+                <div class="quiz-found" id="quizFound"></div>
+                <div class="quiz-feedback empty" id="quizFeedback">&nbsp;</div>
+                <input type="text" id="quizInput" placeholder="Scrivi un anagramma..." onkeyup="handleQuizKeyUp(event)" disabled>
+                <div class="quiz-buttons">
+                    <button class="btn-warning" onclick="skipQuizWord()">⏭️ Passo</button>
+                    <button class="btn-secondary" onclick="endQuiz()">🛑 Termina</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="tab-giochi">
+            <div class="game-selector">
+                <button class="game-btn active" onclick="selectGame('cambi')">🔀 Cambi</button>
+                <button class="game-btn" onclick="selectGame('palindromi')">🪞 Palindromi</button>
+                <button class="game-btn" onclick="selectGame('bifronti')">↔️ Bifronti</button>
+            </div>
+            <div class="game-selector" style="margin-top: -12px;">
+                <button class="game-btn" onclick="selectGame('scarti')">✂️ Scarti</button>
+                <button class="game-btn" onclick="selectGame('zeppe')">🔧 Zeppe</button>
+                <button class="game-btn" onclick="selectGame('aggiunte')">➕ Aggiunte</button>
+                <button class="game-btn" onclick="selectGame('sciarade')">🧩 Sciarade</button>
+            </div>
+            <div class="game-selector" style="margin-top: -12px;">
+                <button class="game-btn" onclick="selectGame('scramble')">🔤 Scramble</button>
+            </div>
+            
+            <div class="game-content active" id="game-cambi">
+                <div class="hint-box"><strong>🔀 Cambi</strong><br>Trasforma una parola in un'altra cambiando una lettera alla volta.</div>
+                <div class="cambi-inputs">
+                    <input type="text" id="cambiStart" placeholder="Parola iniziale..." class="cambi-input" onkeyup="if(event.key==='Enter')findCambi()">
+                    <span class="cambi-arrow">→</span>
+                    <input type="text" id="cambiEnd" placeholder="Parola finale..." class="cambi-input" onkeyup="if(event.key==='Enter')findCambi()">
+                </div>
+                <button class="btn-primary" onclick="findCambi()" id="btnCambi" disabled style="width: 100%;">🔀 Trova catena</button>
+            </div>
+            
+            <div class="game-content" id="game-palindromi">
+                <div class="hint-box"><strong>🪞 Palindromi</strong><br>Parole che si leggono uguali in entrambi i sensi.</div>
+                <div class="options">
+                    <div class="option"><label for="selPalMinLen">Lunghezza min:</label><select id="selPalMinLen"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option></select></div>
+                    <div class="option"><label for="selPalMaxLen">max:</label><select id="selPalMaxLen"><option value="8">8</option><option value="10" selected>10</option><option value="15">15</option><option value="99">∞</option></select></div>
+                </div>
+                <button class="btn-primary" onclick="findPalindromi()" id="btnPalindromi" disabled style="width: 100%;">🪞 Trova palindromi</button>
+            </div>
+            
+            <div class="game-content" id="game-bifronti">
+                <div class="hint-box"><strong>↔️ Bifronti</strong><br>Parole che lette al contrario formano un'altra parola.</div>
+                <div class="options">
+                    <div class="option"><label for="selBifMinLen">Lunghezza min:</label><select id="selBifMinLen"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option></select></div>
+                    <div class="option"><label for="selBifMaxLen">max:</label><select id="selBifMaxLen"><option value="8">8</option><option value="10" selected>10</option><option value="15">15</option><option value="99">∞</option></select></div>
+                </div>
+                <button class="btn-primary" onclick="findBifronti()" id="btnBifronti" disabled style="width: 100%;">↔️ Trova bifronti</button>
+            </div>
+            
+            <div class="game-content" id="game-scarti">
+                <div class="hint-box"><strong>✂️ Scarti</strong><br>Togli una lettera da una parola per formarne un'altra.</div>
+                <input type="text" id="scartiInput" placeholder="Parola da scartare..." onkeyup="if(event.key==='Enter')findScarti()">
+                <button class="btn-primary" onclick="findScarti()" id="btnScarti" disabled style="width: 100%;">✂️ Trova scarti</button>
+            </div>
+            
+            <div class="game-content" id="game-zeppe">
+                <div class="hint-box"><strong>🔧 Zeppe</strong><br>Aggiungi una lettera dentro una parola per formarne un'altra.</div>
+                <input type="text" id="zeppeInput" placeholder="Parola da zeppare..." onkeyup="if(event.key==='Enter')findZeppe()">
+                <button class="btn-primary" onclick="findZeppe()" id="btnZeppe" disabled style="width: 100%;">🔧 Trova zeppe</button>
+            </div>
+            
+            <div class="game-content" id="game-aggiunte">
+                <div class="hint-box"><strong>➕ Aggiunte</strong><br>Aggiungi una lettera all'inizio o alla fine di una parola.</div>
+                <input type="text" id="aggiunteInput" placeholder="Parola base..." onkeyup="if(event.key==='Enter')findAggiunte()">
+                <div class="options">
+                    <div class="option"><input type="checkbox" id="chkAggiuntaInizio" checked><label for="chkAggiuntaInizio">Inizio</label></div>
+                    <div class="option"><input type="checkbox" id="chkAggiuntaFine" checked><label for="chkAggiuntaFine">Fine</label></div>
+                </div>
+                <button class="btn-primary" onclick="findAggiunte()" id="btnAggiunte" disabled style="width: 100%;">➕ Trova aggiunte</button>
+            </div>
+            
+            <div class="game-content" id="game-sciarade">
+                <div class="hint-box"><strong>🧩 Sciarade</strong><br>Trova parole che si scompongono in due o più parole.</div>
+                <input type="text" id="sciaradeInput" placeholder="Parola da scomporre..." onkeyup="if(event.key==='Enter')findSciarade()">
+                <div class="options">
+                    <div class="option"><label for="selSciaradeMinPart">Min parte:</label><select id="selSciaradeMinPart"><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></div>
+                    <div class="option"><label for="selSciaradeMaxParts">Max parti:</label><select id="selSciaradeMaxParts"><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></div>
+                </div>
+                <button class="btn-primary" onclick="findSciarade()" id="btnSciarade" disabled style="width: 100%;">🧩 Scomponi</button>
+                <button class="btn-secondary" onclick="findSciaradeInverse()" id="btnSciaradeInv" disabled style="width: 100%; margin-top: 8px;">🔍 Cerca nel dizionario</button>
+            </div>
+
+            <div class="game-content" id="game-scramble">
+                <div id="scrambleSetup">
+                    <div class="hint-box"><strong>🔤 Scramble</strong><br>Indovina la parola nascosta nell'anagramma!</div>
 
                     <div class="options">
                         <div class="option">
-                            <label for="selDifficulty">Difficoltà:</label>
-                            <select id="selDifficulty">
+                            <label for="selScrambleDifficulty">Difficoltà:</label>
+                            <select id="selScrambleDifficulty">
                                 <option value="easy">Facile (4-6 lettere)</option>
                                 <option value="medium" selected>Medio (7-9 lettere)</option>
                                 <option value="hard">Difficile (10+ lettere)</option>
                             </select>
                         </div>
                         <div class="option">
-                            <input type="checkbox" id="chkTimer" checked>
-                            <label for="chkTimer">Timer (60s)</label>
+                            <input type="checkbox" id="chkScrambleTimer" checked>
+                            <label for="chkScrambleTimer">Timer (60s)</label>
                         </div>
                     </div>
 
-                    <button class="btn-success" onclick="startQuiz()" id="btnStartQuiz" disabled style="width: 100%;">▶️ Inizia Quiz</button>
+                    <button class="btn-success" onclick="startScramble()" id="btnStartScramble" disabled style="width: 100%;">▶️ Inizia</button>
 
-                    <div id="quizStats" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
-                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div id="scrambleStats" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
+                        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px;">
                             <div style="text-align: center;">
                                 <div style="font-size: 0.8em; color: #7f8c8d;">Best Score</div>
-                                <div style="font-size: 1.5em; font-weight: bold; color: #f39c12;" id="bestScore">0</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #f39c12;" id="scrambleBestScore">0</div>
                             </div>
                             <div style="text-align: center;">
-                                <div style="font-size: 0.8em; color: #7f8c8d;">Partite Giocate</div>
-                                <div style="font-size: 1.5em; font-weight: bold; color: #3498db;" id="gamesPlayed">0</div>
+                                <div style="font-size: 0.8em; color: #7f8c8d;">Partite</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #3498db;" id="scrambleGamesPlayed">0</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="quizGame" class="hidden">
+                <div id="scrambleGame" class="hidden">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <div>
-                            <span style="font-size: 1.2em; font-weight: bold; color: #27ae60;">🏆 <span id="currentScore">0</span></span>
-                            <span style="margin-left: 15px; font-size: 1em; color: #e67e22;">🔥 <span id="currentStreak">0</span></span>
+                            <span style="font-size: 1.2em; font-weight: bold; color: #27ae60;">🏆 <span id="scrambleScore">0</span></span>
+                            <span style="margin-left: 15px; font-size: 1em; color: #e67e22;">🔥 <span id="scrambleStreak">0</span></span>
                         </div>
-                        <div id="timerDisplay" style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">⏱️ <span id="timeLeft">60</span>s</div>
+                        <div id="scrambleTimerDisplay" style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">⏱️ <span id="scrambleTimeLeft">60</span>s</div>
                     </div>
 
                     <div style="background: #ecf0f1; border-radius: 12px; padding: 30px; margin-bottom: 20px; text-align: center;">
                         <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px;">Riordina le lettere:</div>
-                        <div id="scrambledWord" style="font-size: 2.5em; font-weight: bold; color: #2c3e50; letter-spacing: 8px; font-family: monospace;"></div>
-                        <div style="font-size: 0.85em; color: #95a5a6; margin-top: 10px;" id="wordLengthHint"></div>
+                        <div id="scrambledLetters" style="font-size: 2.5em; font-weight: bold; color: #2c3e50; letter-spacing: 8px; font-family: monospace;"></div>
+                        <div style="font-size: 0.85em; color: #95a5a6; margin-top: 10px;" id="scrambleLengthHint"></div>
                     </div>
 
-                    <input type="text" id="quizAnswer" placeholder="La tua risposta..." onkeyup="handleQuizKeyUp(event)" style="text-transform: lowercase;">
+                    <input type="text" id="scrambleAnswer" placeholder="La tua risposta..." onkeyup="handleScrambleKeyUp(event)" style="text-transform: lowercase;">
 
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="btn-primary" onclick="checkAnswer()" style="flex: 2;">✓ Verifica</button>
-                        <button class="btn-warning btn-small" onclick="giveHint()" id="btnHint">💡 Aiuto</button>
-                        <button class="btn-secondary btn-small" onclick="skipWord()">⏭️ Salta</button>
+                        <button class="btn-primary" onclick="checkScrambleAnswer()" style="flex: 2;">✓ Verifica</button>
+                        <button class="btn-warning btn-small" onclick="giveScrambleHint()" id="btnScrambleHint">💡 Aiuto</button>
+                        <button class="btn-secondary btn-small" onclick="skipScrambleWord()">⏭️ Salta</button>
                     </div>
 
-                    <div id="quizFeedback" class="hidden" style="margin-top: 15px; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold;"></div>
+                    <div id="scrambleFeedback" class="hidden" style="margin-top: 15px; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold;"></div>
 
-                    <button class="btn-danger btn-small" onclick="endQuiz()" style="width: 100%; margin-top: 15px;">🚪 Termina Quiz</button>
+                    <button class="btn-danger btn-small" onclick="endScramble()" style="width: 100%; margin-top: 15px;">🚪 Termina</button>
                 </div>
 
-                <div id="quizResults" class="hidden">
-                    <h3 style="text-align: center; margin-bottom: 20px;">🎉 Quiz Terminato!</h3>
+                <div id="scrambleResults" class="hidden">
+                    <h3 style="text-align: center; margin-bottom: 20px;">🎉 Partita Terminata!</h3>
 
                     <div style="background: #ecf0f1; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
                         <div style="text-align: center; margin-bottom: 20px;">
-                            <div style="font-size: 3em; font-weight: bold; color: #27ae60;" id="finalScore">0</div>
+                            <div style="font-size: 3em; font-weight: bold; color: #27ae60;" id="scrambleFinalScore">0</div>
                             <div style="font-size: 1em; color: #7f8c8d;">Punteggio Finale</div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
                             <div style="text-align: center;">
                                 <div style="font-size: 0.8em; color: #7f8c8d;">Corrette</div>
-                                <div style="font-size: 1.5em; font-weight: bold; color: #27ae60;" id="correctAnswers">0</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #27ae60;" id="scrambleCorrect">0</div>
                             </div>
                             <div style="text-align: center;">
                                 <div style="font-size: 0.8em; color: #7f8c8d;">Sbagliate</div>
-                                <div style="font-size: 1.5em; font-weight: bold; color: #e74c3c;" id="wrongAnswers">0</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #e74c3c;" id="scrambleWrong">0</div>
                             </div>
                             <div style="text-align: center;">
                                 <div style="font-size: 0.8em; color: #7f8c8d;">Saltate</div>
-                                <div style="font-size: 1.5em; font-weight: bold; color: #95a5a6;" id="skippedWords">0</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #95a5a6;" id="scrambleSkipped">0</div>
                             </div>
                             <div style="text-align: center;">
                                 <div style="font-size: 0.8em; color: #7f8c8d;">Streak Max</div>
-                                <div style="font-size: 1.5em; font-weight: bold; color: #e67e22;" id="maxStreakResult">0</div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #e67e22;" id="scrambleMaxStreak">0</div>
                             </div>
                         </div>
 
-                        <div id="newRecord" class="hidden" style="margin-top: 20px; padding: 12px; background: #f39c12; color: white; border-radius: 8px; text-align: center; font-weight: bold;">
+                        <div id="scrambleNewRecord" class="hidden" style="margin-top: 20px; padding: 12px; background: #f39c12; color: white; border-radius: 8px; text-align: center; font-weight: bold;">
                             🏆 Nuovo Record! 🏆
                         </div>
                     </div>
 
-                    <button class="btn-success" onclick="startQuiz()" style="width: 100%;">🔄 Gioca Ancora</button>
-                    <button class="btn-secondary" onclick="backToQuizSetup()" style="width: 100%; margin-top: 10px;">⚙️ Cambia Impostazioni</button>
+                    <button class="btn-success" onclick="startScramble()" style="width: 100%;">🔄 Gioca Ancora</button>
+                    <button class="btn-secondary" onclick="backToScrambleSetup()" style="width: 100%; margin-top: 10px;">⚙️ Cambia Impostazioni</button>
                 </div>
             </div>
         </div>
     </div>
     
     <div class="card hidden" id="resultsCard">
-        <div class="results-header"><h3>Risultati</h3><span class="results-count" id="resultsCount"></span></div>
+        <div class="results-header"><h3>Risultati</h3><span class="results-count" id="resultsCount"></span><button class="copy-btn" onclick="copyResults()" id="btnCopy">📋 Copia</button></div>
         <div class="results-container" id="resultsContainer"></div>
     </div>
     
@@ -473,11 +781,7 @@
         <div class="modal">
             <h3>➕ Aggiungi parola</h3>
             <input type="text" id="newWordInput" placeholder="Nuova parola..." onkeyup="handleAddWordKeyUp(event)">
-            <p style="font-size: 0.85em; color: #7f8c8d; margin: 0;">Salvata nel browser.</p>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeAddWordModal()">Annulla</button>
-                <button class="btn-success" onclick="addWord()">Aggiungi</button>
-            </div>
+            <div class="modal-buttons"><button class="btn-secondary" onclick="closeAddWordModal()">Annulla</button><button class="btn-success" onclick="addWord()">Aggiungi</button></div>
         </div>
     </div>
     
@@ -485,55 +789,200 @@
         <div class="modal">
             <h3>✉️ Suggerisci parola</h3>
             <input type="text" id="suggestWordInput" placeholder="Parola da suggerire...">
-            <p style="font-size: 0.85em; color: #7f8c8d; margin: 0;">Si aprirà il client email.</p>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeSuggestModal()">Annulla</button>
-                <button class="btn-warning" onclick="sendSuggestion()">Invia</button>
+            <div class="modal-buttons"><button class="btn-secondary" onclick="closeSuggestModal()">Annulla</button><button class="btn-warning" onclick="sendSuggestion()">Invia</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="helpModal" onclick="closeModalOnOverlay(event)">
+        <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h3>📖 Guida all'uso</h3>
+            <div style="text-align: left; font-size: 0.9em; line-height: 1.6;">
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🚀 Per iniziare</h4>
+                <p>Scegli un vocabolario: <strong>Ridotto</strong> (~31k parole, veloce) o <strong>Completo</strong> (~283k parole, esaustivo). Il dizionario viene salvato nel browser.</p>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🔄 Anagrammi</h4>
+                <p>Scrivi una parola e trova tutti i suoi anagrammi.</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><strong>Multi-parola:</strong> anagrammi composti da più parole</li>
+                    <li><strong>Parole incluse:</strong> parole più corte contenute nelle lettere</li>
+                </ul>
+                <p><strong>Pattern speciali:</strong></p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><code>roma+</code> = ROMA + una vocale</li>
+                    <li><code>roma-</code> = ROMA + una consonante</li>
+                    <li><code>roma?</code> = ROMA + una lettera qualsiasi</li>
+                    <li><code>roma+-</code> = ROMA + vocale + consonante</li>
+                    <li><code>roma++</code> = ROMA + due vocali</li>
+                    <li><code>roma*</code> = superanagrammi (parole che contengono ROMA)</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🔍 Cerca (Pattern)</h4>
+                <p>Cerca parole usando caratteri speciali:</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><code>.</code> o <code>?</code> = una lettera qualsiasi</li>
+                    <li><code>+</code> = una vocale</li>
+                    <li><code>-</code> = una consonante</li>
+                    <li><code>*</code> = zero o più lettere</li>
+                </ul>
+                <p>Es: <code>cas+</code> → casa, case | <code>*mente</code> → parole in -mente</p>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🎯 Quiz</h4>
+                <p>Ti viene mostrata una parola, trova tutti i suoi anagrammi!</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li>Scrivi un anagramma alla volta e premi Invio</li>
+                    <li>Per multi-parola: "parola1 parola2" o "parola1 + parola2"</li>
+                    <li>60 secondi per parola, bonus tempo se completi</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">🎮 Giochi</h4>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><strong>🔀 Cambi:</strong> trasforma una parola cambiando una lettera alla volta</li>
+                    <li><strong>🪞 Palindromi:</strong> parole uguali al contrario (ANNA, RADAR)</li>
+                    <li><strong>↔️ Bifronti:</strong> parole che al contrario ne formano un'altra (AMOR ↔ ROMA)</li>
+                    <li><strong>✂️ Scarti:</strong> togli una lettera (CAMPO → CAPO)</li>
+                    <li><strong>🔧 Zeppe:</strong> aggiungi una lettera dentro</li>
+                    <li><strong>➕ Aggiunte:</strong> aggiungi lettera a inizio o fine</li>
+                    <li><strong>🧩 Sciarade:</strong> scomponi in parole (CANICOLA = CANI + COLA)</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">💡 Suggerimenti</h4>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li>Clicca su una parola per cercare i suoi anagrammi</li>
+                    <li>Tieni premuto (o tasto destro) per rimuoverla o cercare pattern</li>
+                    <li>Usa "➕ Aggiungi" per parole mancanti</li>
+                </ul>
+                
+                <h4 style="color: #3498db; margin: 15px 0 8px;">⚠️ Nota tecnica</h4>
+                <p style="font-size: 0.85em; color: #7f8c8d;">Apostrofi e trattini vengono ignorati: <em>"dell'arte"</em> è trattata come <em>"dellarte"</em>. Scelta necessaria per gli anagrammi, ma può influire su alcuni giochi (sciarade, bifronti).</p>
+                
+                <p style="margin-top: 15px; color: #7f8c8d; font-size: 0.85em;">Vocabolario: <a href="http://www.enignet.it" target="_blank">Enilab/BEI</a> • <a href="https://github.com/infingardo/Enigmistica" target="_blank">GitHub</a></p>
             </div>
+            <div class="modal-buttons"><button class="btn-primary" onclick="closeHelp()" style="width: 100%;">Ho capito!</button></div>
         </div>
     </div>
 
     <script>
         const DICT_BASE = 'https://infingardo.github.io/Enigmistica/';
-        const DICT_FILES = { 
-            ridotto: DICT_BASE + 'dizionario_ridotto.txt', 
-            completo: DICT_BASE + 'dizionario_completo.txt' 
-        };
+        const DICT_FILES = { ridotto: DICT_BASE + 'dizionario_ridotto.txt', completo: DICT_BASE + 'dizionario_completo.txt' };
         const CONTACT_EMAIL = 'critto@gmail.com';
         const CONTACT_NAME = 'kc8';
         const DB_NAME = 'AnagrammiBEI';
         const DB_VERSION = 1;
         const STORE_NAME = 'data';
-        
         const VOWELS = 'aeiouàèéìòù';
         const CONSONANTS = 'bcdfghjklmnpqrstvwxyz';
         
+        // CONFIG: limiti centralizzati
+        const CONFIG = {
+            maxPatternResults: 1000,
+            maxMultiWordResults: 500,
+            maxPatternCombinations: 50000,
+            maxCambiNodes: 10000,
+            maxSciaradeInverseCheck: 5000,
+            maxSciaradeInverseResults: 200,
+            maxSuperanagramsPerGroup: 200
+        };
+        
         let db = null, dictIndex = null, wordSet = null, wordList = null, customWords = null, removedWords = null;
-        let dictSize = 0, currentDict = null, selectedWord = null, longPressTimer = null;
-        let currentTab = 'anagrammi';
+        let dictSize = 0, currentDict = null, selectedWord = null, longPressTimer = null, currentTab = 'anagrammi';
+        let wordsByLength = {}; // Pre-indice per lunghezza
+        let quizActive = false, quizWord = null, quizAnagrams = [], quizFound = [], quizStreak = 0, quizScore = 0, quizCandidates = [], quizTimer = null, quizTimeLeft = 60;
+        let quizTransitioning = false; // FIX: flag per evitare race condition
+        let currentGame = 'cambi';
         
         document.addEventListener('DOMContentLoaded', init);
         document.addEventListener('click', hideContextMenu);
+        // FIX: cancella longPressTimer su scroll
+        document.addEventListener('scroll', cancelLongPress, true);
+        
+        function cancelLongPress() {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        }
         
         async function init() {
             try {
                 db = await openDB();
                 const saved = await dbGet('currentDict');
                 if (saved) await loadDict(saved, true);
+                
+                // FIX: listener per nascondere/mostrare filtri lunghezza in base al pattern
+                document.getElementById('inputPattern').addEventListener('input', updatePatternLengthVisibility);
+                
+                // Inizializza visibilità filtri anagrammi
+                updateAnagramFiltersVisibility();
             } catch (err) { console.error('Init:', err); }
+        }
+        
+        // Mostra/nascondi filtri anagrammi in base alle checkbox
+        function updateAnagramFiltersVisibility() {
+            const multiChecked = document.getElementById('chkMulti').checked;
+            const partialChecked = document.getElementById('chkPartial').checked;
+            
+            // Max parole: visibile solo se multi-parola attivo
+            document.getElementById('optMaxWords').classList.toggle('hidden', !multiChecked);
+            
+            // Min lettere: visibile se almeno una delle due opzioni è attiva
+            document.getElementById('optMinLen').classList.toggle('hidden', !multiChecked && !partialChecked);
+        }
+        
+        // FIX: mostra/nascondi filtri lunghezza se pattern contiene *
+        // e imposta lunghezza minima in base ai caratteri fissi
+        function updatePatternLengthVisibility() {
+            const pattern = document.getElementById('inputPattern').value.toLowerCase();
+            const hasWildcard = pattern.includes('*');
+            document.getElementById('patternLengthOptions').classList.toggle('hidden', !hasWildcard);
+            
+            if (hasWildcard) {
+                // Calcola caratteri fissi (tutto tranne *)
+                let fixedChars = 0;
+                for (const char of pattern) {
+                    if (char === '*') continue;
+                    if (char === '.' || char === '?' || char === '+' || char === '-' || /[a-zàèéìòùâêîôûäëïöüç]/.test(char)) {
+                        fixedChars++;
+                    }
+                }
+                
+                const minAllowed = Math.max(1, fixedChars);
+                const selMin = document.getElementById('selMinLenSearch');
+                const currentMin = parseInt(selMin.value) || 3;
+                const newValue = Math.max(minAllowed, currentMin < minAllowed ? minAllowed : currentMin);
+                
+                // Rigenera opzioni con minimo corretto
+                let options = '';
+                for (let i = minAllowed; i <= 15; i++) {
+                    const selected = (i === newValue) ? ' selected' : '';
+                    options += `<option value="${i}"${selected}>${i}</option>`;
+                }
+                selMin.innerHTML = options;
+            }
         }
         
         function switchTab(tab) {
             currentTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (tab === 'anagrammi' && i === 0) || (tab === 'ricerca' && i === 1) || (tab === 'quiz' && i === 2) || (tab === 'giochi' && i === 3)));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            const tabIndex = tab === 'anagrammi' ? 1 : (tab === 'ricerca' ? 2 : 3);
-            document.querySelector(`.tab:nth-child(${tabIndex})`).classList.add('active');
             document.getElementById(`tab-${tab}`).classList.add('active');
+            if (tab !== 'quiz' && tab !== 'giochi') document.getElementById('resultsCard').classList.add('hidden');
+            // FIX: aggiorna visibilità filtri quando si entra nel tab ricerca
+            if (tab === 'ricerca') updatePatternLengthVisibility();
+        }
+        
+        function selectGame(game) {
+            currentGame = game;
+            document.querySelectorAll('.game-btn').forEach(btn => {
+                const t = btn.textContent.toLowerCase();
+                btn.classList.toggle('active', (game === 'cambi' && t.includes('cambi')) || (game === 'palindromi' && t.includes('palindromi')) || (game === 'bifronti' && t.includes('bifronti')) || (game === 'scarti' && t.includes('scarti')) || (game === 'zeppe' && t.includes('zeppe')) || (game === 'aggiunte' && t.includes('aggiunte')) || (game === 'sciarade' && t.includes('sciarade')) || (game === 'scramble' && t.includes('scramble')));
+            });
+            document.querySelectorAll('.game-content').forEach(g => g.classList.remove('active'));
+            document.getElementById(`game-${game}`).classList.add('active');
             document.getElementById('resultsCard').classList.add('hidden');
 
-            // Load quiz stats when switching to quiz tab
-            if (tab === 'quiz') loadQuizStats();
+            if (game === 'scramble') {
+                loadScrambleStats();
+            }
         }
         
         function openDB() {
@@ -541,50 +990,21 @@
                 const req = indexedDB.open(DB_NAME, DB_VERSION);
                 req.onerror = () => reject(req.error);
                 req.onsuccess = () => resolve(req.result);
-                req.onupgradeneeded = (e) => {
-                    if (!e.target.result.objectStoreNames.contains(STORE_NAME))
-                        e.target.result.createObjectStore(STORE_NAME);
-                };
+                req.onupgradeneeded = (e) => { if (!e.target.result.objectStoreNames.contains(STORE_NAME)) e.target.result.createObjectStore(STORE_NAME); };
             });
         }
         
-        function dbGet(key) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readonly');
-                const req = tx.objectStore(STORE_NAME).get(key);
-                req.onerror = () => reject(req.error);
-                req.onsuccess = () => resolve(req.result);
-            });
-        }
-        
-        function dbPut(key, value) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const req = tx.objectStore(STORE_NAME).put(value, key);
-                req.onerror = () => reject(req.error);
-                req.onsuccess = () => resolve();
-            });
-        }
+        function dbGet(key) { return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readonly'); const req = tx.objectStore(STORE_NAME).get(key); req.onerror = () => reject(req.error); req.onsuccess = () => resolve(req.result); }); }
+        function dbPut(key, value) { return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readwrite'); const req = tx.objectStore(STORE_NAME).put(value, key); req.onerror = () => reject(req.error); req.onsuccess = () => resolve(); }); }
         
         async function loadDict(type, fromCache = false) {
             currentDict = type;
-            document.querySelectorAll('.dict-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(type));
-            });
-            
+            document.querySelectorAll('.dict-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase().includes(type)));
             customWords = new Set(await dbGet(`custom_${type}`) || []);
             removedWords = new Set(await dbGet(`removed_${type}`) || []);
-            
             const cached = await dbGet(`dict_${type}`);
-            if (cached && fromCache) {
-                dictIndex = new Map(cached.index);
-                wordSet = new Set(cached.words);
-                wordList = cached.words;
-                dictSize = cached.size;
-                finishLoad();
-            } else {
-                await downloadDict(type);
-            }
+            if (cached && fromCache) { dictIndex = new Map(cached.index); wordSet = new Set(cached.words); wordList = cached.words; dictSize = cached.size; finishLoad(); }
+            else await downloadDict(type);
         }
         
         async function downloadDict(type) {
@@ -592,45 +1012,29 @@
             loader.classList.remove('hidden');
             updateLoadingText('Download vocabolario...');
             updateProgress(0);
-            
             try {
                 const res = await fetch(DICT_FILES[type]);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                
                 const text = await res.text();
                 updateLoadingText('Elaborazione...');
                 updateProgress(50);
-                
                 await processWords(text);
-                
                 for (const w of customWords) addWordToIndex(w);
                 for (const w of removedWords) removeWordFromIndex(w);
-                
                 wordList = Array.from(wordSet);
-                
                 await dbPut(`dict_${type}`, { index: Array.from(dictIndex.entries()), words: wordList, size: dictSize });
                 await dbPut('currentDict', type);
-                
                 loader.classList.add('hidden');
                 finishLoad();
-            } catch (err) {
-                loader.classList.add('hidden');
-                showError(`Errore: ${err.message}. Verifica che i file dizionario siano nella stessa cartella.`);
-            }
+            } catch (err) { loader.classList.add('hidden'); showError(`Errore: ${err.message}`); }
         }
         
         async function processWords(text) {
             const lines = text.split(/[\r\n]+/);
-            dictIndex = new Map();
-            wordSet = new Set();
-            dictSize = 0;
-            
+            dictIndex = new Map(); wordSet = new Set(); dictSize = 0;
             for (let i = 0; i < lines.length; i += 10000) {
                 const batch = lines.slice(i, Math.min(i + 10000, lines.length));
-                for (const line of batch) {
-                    const word = line.trim().toLowerCase();
-                    if (isValidWord(word)) addWordToIndex(word);
-                }
+                for (const line of batch) { const word = line.trim().toLowerCase(); if (isValidWord(word)) addWordToIndex(word); }
                 updateProgress(50 + (Math.min(i + 10000, lines.length) / lines.length) * 50);
                 await new Promise(r => setTimeout(r, 0));
             }
@@ -639,155 +1043,132 @@
         function finishLoad() {
             document.getElementById('dictSelector').classList.add('hidden');
             document.getElementById('dictOptions').classList.remove('hidden');
-            document.getElementById('inputWord').disabled = false;
-            document.getElementById('inputPattern').disabled = false;
-            document.getElementById('btnSearch').disabled = false;
-            document.getElementById('btnPattern').disabled = false;
-            document.getElementById('btnAddWord').disabled = false;
+            ['inputWord', 'inputPattern'].forEach(id => document.getElementById(id).disabled = false);
+            ['btnSearch', 'btnPattern', 'btnAddWord', 'btnStartQuiz', 'btnCambi', 'btnPalindromi', 'btnBifronti', 'btnScarti', 'btnZeppe', 'btnAggiunte', 'btnSciarade', 'btnSciaradeInv'].forEach(id => document.getElementById(id).disabled = false);
             document.getElementById('inputWord').focus();
-            
-            const label = currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo';
-            updateStatus('loaded', `✅ ${label} (${formatNumber(dictSize)} parole)`);
+            updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
             updateCustomWordsCount();
+            buildQuizCandidates();
+            buildWordsByLength(); // Pre-indice per cambi
+            // FIX: inizializza visibilità filtri
+            updatePatternLengthVisibility();
+            updateAnagramFiltersVisibility();
+        }
+        
+        // Pre-indicizza parole per lunghezza (ottimizza findCambi)
+        function buildWordsByLength() {
+            wordsByLength = {};
+            for (const word of wordSet) {
+                const len = word.replace(/['-]/g, '').length;
+                if (!wordsByLength[len]) wordsByLength[len] = [];
+                wordsByLength[len].push(word);
+            }
         }
         
         function switchDict() {
             document.getElementById('dictSelector').classList.remove('hidden');
             document.getElementById('dictOptions').classList.add('hidden');
             document.getElementById('resultsCard').classList.add('hidden');
-            document.getElementById('inputWord').disabled = true;
-            document.getElementById('inputPattern').disabled = true;
-            document.getElementById('btnSearch').disabled = true;
-            document.getElementById('btnPattern').disabled = true;
+            ['inputWord', 'inputPattern'].forEach(id => document.getElementById(id).disabled = true);
+            ['btnSearch', 'btnPattern', 'btnStartQuiz', 'btnCambi', 'btnPalindromi', 'btnBifronti', 'btnScarti', 'btnZeppe', 'btnAggiunte', 'btnSciarade', 'btnSciaradeInv'].forEach(id => document.getElementById(id).disabled = true);
+            endQuiz();
             updateStatus('', '⏳ Seleziona un vocabolario...');
         }
         
         function isValidWord(word) { return word && word.length >= 2 && /^[a-zàèéìòùâêîôûäëïöüç'-]+$/i.test(word); }
+        function getSignature(word) { return word.toLowerCase().replace(/['-]/g, '').split('').sort().join(''); }
         
         function addWordToIndex(word) {
             const clean = word.replace(/['-]/g, '');
             if (clean.length < 2) return false;
             const sig = getSignature(clean);
             if (!dictIndex.has(sig)) dictIndex.set(sig, []);
-            if (!wordSet.has(word)) {
-                dictIndex.get(sig).push(word);
-                wordSet.add(word);
-                dictSize++;
-                return true;
-            }
+            if (!wordSet.has(word)) { dictIndex.get(sig).push(word); wordSet.add(word); dictSize++; return true; }
             return false;
         }
         
         function removeWordFromIndex(word) {
             if (!wordSet.has(word)) return false;
             const sig = getSignature(word.replace(/['-]/g, ''));
-            wordSet.delete(word);
-            dictSize--;
-            if (dictIndex.has(sig)) {
-                const words = dictIndex.get(sig).filter(w => w !== word);
-                if (words.length === 0) dictIndex.delete(sig);
-                else dictIndex.set(sig, words);
-            }
+            wordSet.delete(word); dictSize--;
+            if (dictIndex.has(sig)) { const words = dictIndex.get(sig).filter(w => w !== word); if (words.length === 0) dictIndex.delete(sig); else dictIndex.set(sig, words); }
             return true;
         }
         
         async function saveCustomData() {
             wordList = Array.from(wordSet);
+            buildWordsByLength(); // Ricostruisci indice
             await dbPut(`custom_${currentDict}`, Array.from(customWords));
             await dbPut(`removed_${currentDict}`, Array.from(removedWords));
             await dbPut(`dict_${currentDict}`, { index: Array.from(dictIndex.entries()), words: wordList, size: dictSize });
         }
         
-        // Pattern search
         function patternToRegex(pattern) {
             let regex = '^';
             for (const char of pattern.toLowerCase()) {
-                if (char === '.' || char === '?') {
-                    regex += '[a-zàèéìòùâêîôûäëïöüç]';
-                } else if (char === '+') {
-                    regex += `[${VOWELS}]`;
-                } else if (char === '-') {
-                    regex += `[${CONSONANTS}]`;
-                } else if (char === '*') {
-                    regex += '[a-zàèéìòùâêîôûäëïöüç]*';
-                } else if (/[a-zàèéìòùâêîôûäëïöüç]/.test(char)) {
-                    regex += char;
+                if (char === '.' || char === '?') regex += '[a-zàèéìòùâêîôûäëïöüç]';
+                else if (char === '+') regex += `[${VOWELS}]`;
+                else if (char === '-') regex += `[${CONSONANTS}]`;
+                else if (char === '*') regex += '[a-zàèéìòùâêîôûäëïöüç]*';
+                else if (/[a-zàèéìòùâêîôûäëïöüç]/.test(char)) regex += char;
+            }
+            return new RegExp(regex + '$', 'i');
+        }
+        
+        // FIX: calcola la lunghezza fissa di un pattern senza wildcard
+        function getPatternFixedLength(pattern) {
+            if (pattern.includes('*')) return null;
+            // Conta solo i caratteri che corrispondono a esattamente una lettera
+            let len = 0;
+            for (const char of pattern.toLowerCase()) {
+                if (char === '.' || char === '?' || char === '+' || char === '-' || /[a-zàèéìòùâêîôûäëïöüç]/.test(char)) {
+                    len++;
                 }
             }
-            regex += '$';
-            return new RegExp(regex, 'i');
+            return len;
         }
         
         function searchPattern() {
             const pattern = document.getElementById('inputPattern').value.trim();
             if (!pattern) return;
             
-            const minLen = parseInt(document.getElementById('selMinLenSearch').value);
-            const maxLen = parseInt(document.getElementById('selMaxLenSearch').value);
+            // FIX: calcola lunghezza fissa o usa filtri
+            const fixedLen = getPatternFixedLength(pattern);
+            const minLen = fixedLen !== null ? fixedLen : parseInt(document.getElementById('selMinLenSearch').value);
+            const maxLen = fixedLen !== null ? fixedLen : parseInt(document.getElementById('selMaxLenSearch').value);
             
             let regex;
-            try {
-                regex = patternToRegex(pattern);
-            } catch (e) {
-                alert('Pattern non valido');
-                return;
-            }
-            
+            try { regex = patternToRegex(pattern); } catch (e) { alert('Pattern non valido'); return; }
             const results = [];
+            let truncated = false;
             for (const word of wordList) {
                 if (word.length < minLen || word.length > maxLen) continue;
-                if (regex.test(word)) {
-                    results.push(word);
-                    if (results.length >= 1000) break;
+                if (regex.test(word)) { 
+                    results.push(word); 
+                    if (results.length >= CONFIG.maxPatternResults) { truncated = true; break; }
                 }
             }
-            
             results.sort((a, b) => a.length - b.length || a.localeCompare(b));
-            displayPatternResults(pattern, results);
+            displayPatternResults(pattern, results, truncated);
         }
         
-        function displayPatternResults(pattern, results) {
+        function displayPatternResults(pattern, results, truncated = false) {
             const container = document.getElementById('resultsContainer');
             const card = document.getElementById('resultsCard');
-            
-            document.getElementById('resultsCount').textContent = `${results.length}${results.length >= 1000 ? '+' : ''} risultat${results.length === 1 ? 'o' : 'i'} per "${pattern}"`;
-            
-            if (results.length === 0) {
-                container.innerHTML = '<div class="no-results">Nessuna parola trovata 😕</div>';
-                card.classList.remove('hidden');
-                return;
-            }
-            
-            // Raggruppa per lunghezza
+            document.getElementById('resultsCount').textContent = `${results.length}${truncated ? '+' : ''} risultat${results.length === 1 ? 'o' : 'i'} per "${pattern}"`;
+            if (results.length === 0) { container.innerHTML = '<div class="no-results">Nessuna parola trovata 😕</div>'; card.classList.remove('hidden'); return; }
             const byLen = {};
-            for (const w of results) {
-                const len = w.length;
-                if (!byLen[len]) byLen[len] = [];
-                byLen[len].push(w);
-            }
-            
+            for (const w of results) { const len = w.length; if (!byLen[len]) byLen[len] = []; byLen[len].push(w); }
             const lengths = Object.keys(byLen).map(Number).sort((a, b) => a - b);
-            
-            let html = `<div class="results-section">
-                ${lengths.map(len => `
-                    <div class="length-group">
-                        <div class="length-label">${len} lettere (${byLen[len].length})</div>
-                        <div class="results-grid">${byLen[len].map(w => wordSpan(w)).join('')}</div>
-                    </div>
-                `).join('')}
-            </div>`;
-            
+            let html = `<div class="results-section">${lengths.map(len => `<div class="length-group"><div class="length-label">${len} lettere (${byLen[len].length})</div><div class="results-grid">${byLen[len].map(w => wordSpan(w)).join('')}</div></div>`).join('')}</div>`;
+            if (truncated) {
+                html += `<div class="truncated-warning">⚠️ Risultati troncati a ${CONFIG.maxPatternResults}. Usa un pattern più specifico.</div>`;
+            }
             container.innerHTML = html;
             card.classList.remove('hidden');
         }
         
-        // Word management
-        function showAddWordModal() {
-            document.getElementById('addWordModal').classList.remove('hidden');
-            document.getElementById('newWordInput').value = '';
-            document.getElementById('newWordInput').focus();
-        }
-        
+        function showAddWordModal() { document.getElementById('addWordModal').classList.remove('hidden'); document.getElementById('newWordInput').value = ''; document.getElementById('newWordInput').focus(); }
         function closeAddWordModal() { document.getElementById('addWordModal').classList.add('hidden'); }
         function handleAddWordKeyUp(e) { if (e.key === 'Enter') addWord(); if (e.key === 'Escape') closeAddWordModal(); }
         
@@ -796,12 +1177,9 @@
             if (!word) { alert('Inserisci una parola'); return; }
             if (!isValidWord(word)) { alert('Parola non valida'); return; }
             if (wordSet.has(word)) { alert('Già presente'); closeAddWordModal(); return; }
-            
-            removedWords.delete(word);
-            addWordToIndex(word);
-            customWords.add(word);
+            removedWords.delete(word); addWordToIndex(word); customWords.add(word);
             await saveCustomData();
-            
+            buildQuizCandidates(); // FIX: aggiorna candidati quiz dopo aggiunta
             closeAddWordModal();
             updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
             updateCustomWordsCount();
@@ -810,18 +1188,13 @@
         
         async function removeWord(word) {
             if (!wordSet.has(word)) return;
-            removeWordFromIndex(word);
-            removedWords.add(word);
-            customWords.delete(word);
+            removeWordFromIndex(word); removedWords.add(word); customWords.delete(word);
             await saveCustomData();
-            
+            buildQuizCandidates(); // FIX: aggiorna candidati quiz dopo rimozione
             updateStatus('loaded', `✅ ${currentDict === 'ridotto' ? '📘 Ridotto' : '📚 Completo'} (${formatNumber(dictSize)} parole)`);
             updateCustomWordsCount();
             showSuccess(`"${word}" rimossa`);
-            if (!document.getElementById('resultsCard').classList.contains('hidden')) {
-                if (currentTab === 'anagrammi') findAnagrams();
-                else searchPattern();
-            }
+            if (!document.getElementById('resultsCard').classList.contains('hidden')) { if (currentTab === 'anagrammi') findAnagrams(); else searchPattern(); }
         }
         
         async function restoreRemoved() {
@@ -843,81 +1216,72 @@
             el.textContent = parts.length > 0 ? `📝 ${parts.join(', ')}` : '';
         }
         
-        // Context menu
         function showContextMenu(e, word) {
-            e.preventDefault();
-            selectedWord = word;
+            e.preventDefault(); selectedWord = word;
             const menu = document.getElementById('contextMenu');
             menu.classList.remove('hidden');
             menu.style.left = Math.min(e.clientX || 0, window.innerWidth - 160) + 'px';
             menu.style.top = Math.min(e.clientY || 0, window.innerHeight - 100) + 'px';
         }
-        
         function hideContextMenu() { document.getElementById('contextMenu').classList.add('hidden'); selectedWord = null; }
-        
-        function searchSelectedWord() { 
-            if (selectedWord) { 
-                switchTab('anagrammi');
-                document.getElementById('inputWord').value = selectedWord; 
-                findAnagrams(); 
-            } 
-            hideContextMenu(); 
-        }
-        
-        function patternSelectedWord() {
-            if (selectedWord) {
-                switchTab('ricerca');
-                document.getElementById('inputPattern').value = selectedWord;
-            }
-            hideContextMenu();
-        }
-        
+        function searchSelectedWord() { if (selectedWord) { switchTab('anagrammi'); document.getElementById('inputWord').value = selectedWord; findAnagrams(); } hideContextMenu(); }
+        function patternSelectedWord() { if (selectedWord) { switchTab('ricerca'); document.getElementById('inputPattern').value = selectedWord; updatePatternLengthVisibility(); } hideContextMenu(); }
         function removeSelectedWord() { if (selectedWord) removeWord(selectedWord); hideContextMenu(); }
-        function handleWordTouchStart(e, word) { longPressTimer = setTimeout(() => showContextMenu(e, word), 500); }
-        function handleWordTouchEnd() { clearTimeout(longPressTimer); }
+        function handleWordTouchStart(e, word) { 
+            cancelLongPress(); // FIX: cancella timer precedente
+            longPressTimer = setTimeout(() => { longPressTimer = null; showContextMenu(e, word); }, 500); 
+        }
+        function handleWordTouchEnd() { cancelLongPress(); }
         
-        // Export & Suggest
         function exportDictionary() {
             const words = Array.from(wordSet).sort();
             const blob = new Blob([words.join('\n')], { type: 'text/plain' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `dizionario_${currentDict}.txt`;
-            a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `dizionario_${currentDict}.txt`; a.click();
             showSuccess(`Esportate ${formatNumber(words.length)} parole`);
         }
         
-        function suggestWord() {
-            document.getElementById('suggestModal').classList.remove('hidden');
-            document.getElementById('suggestWordInput').value = '';
-            document.getElementById('suggestWordInput').focus();
-        }
-        
+        function suggestWord() { document.getElementById('suggestModal').classList.remove('hidden'); document.getElementById('suggestWordInput').value = ''; document.getElementById('suggestWordInput').focus(); }
         function closeSuggestModal() { document.getElementById('suggestModal').classList.add('hidden'); }
-        
-        function sendSuggestion() {
-            const word = document.getElementById('suggestWordInput').value.trim();
-            if (!word) { alert('Inserisci una parola'); return; }
-            window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Suggerimento: ${word}`)}&body=${encodeURIComponent(`Caro ${CONTACT_NAME},\n\nti suggerisco di aggiungere:\n\n${word}\n\nGrazie!`)}`;
-            closeSuggestModal();
-        }
-        
+        function showHelp() { document.getElementById('helpModal').classList.remove('hidden'); }
+        function closeHelp() { document.getElementById('helpModal').classList.add('hidden'); }
+        function sendSuggestion() { const word = document.getElementById('suggestWordInput').value.trim(); if (!word) { alert('Inserisci una parola'); return; } window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Suggerimento: ${word}`)}&body=${encodeURIComponent(`Caro ${CONTACT_NAME},\n\nti suggerisco:\n\n${word}\n\nGrazie!`)}`; closeSuggestModal(); }
         function closeModalOnOverlay(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden'); }
         
-        // Anagrams
-        function getSignature(word) { return word.toLowerCase().replace(/['-]/g, '').split('').sort().join(''); }
+        // ==================== ANAGRAMMI ====================
         
         function findAnagrams() {
             const input = document.getElementById('inputWord').value.trim().toLowerCase();
             if (!input) return;
             
-            const clean = input.replace(/[^a-zàèéìòùâêîôûäëïöüç]/gi, '');
-            if (clean.length < 2) { alert('Almeno 2 lettere'); return; }
-            
             const minLen = parseInt(document.getElementById('selMinLen').value);
             const multiWord = document.getElementById('chkMulti').checked;
             const showPartial = document.getElementById('chkPartial').checked;
             const maxWords = parseInt(document.getElementById('selMaxWords').value);
+            
+            // Check for pattern: parola followed by +, -, ?, *
+            const patternMatch = input.match(/^([a-zàèéìòùâêîôûäëïöüç]+)([\+\-\?\*]+)$/i);
+            
+            if (patternMatch) {
+                const baseWord = patternMatch[1];
+                const pattern = patternMatch[2];
+                
+                // FIX: validazione pattern migliorata - * deve essere da solo
+                if (pattern.includes('*')) {
+                    if (pattern === '*') {
+                        findSuperAnagrams(baseWord, minLen);
+                    } else {
+                        alert('Il carattere * deve essere usato da solo (es: roma*). Non può essere combinato con +, -, ?');
+                        return;
+                    }
+                } else {
+                    findPatternAnagrams(baseWord, pattern, minLen, multiWord, maxWords);
+                }
+                return;
+            }
+            
+            // Normal anagram search
+            const clean = input.replace(/[^a-zàèéìòùâêîôûäëïöüç]/gi, '');
+            if (clean.length < 2) { alert('Almeno 2 lettere'); return; }
             
             const single = (dictIndex.get(getSignature(clean)) || []).filter(w => w.toLowerCase() !== clean);
             let multi = multiWord && clean.length <= 15 ? findMultiWordAnagrams(clean, maxWords, minLen) : [];
@@ -926,21 +1290,135 @@
             displayAnagramResults(clean, single, multi, partial);
         }
         
-        function findPartialAnagrams(input, minLen) {
-            const results = [];
-            const lc = {};
-            for (const l of input) lc[l] = (lc[l] || 0) + 1;
+        function findSuperAnagrams(baseWord, minLen) {
+            const baseCounts = {};
+            for (const l of baseWord) baseCounts[l] = (baseCounts[l] || 0) + 1;
             
+            const results = [];
             for (const word of wordSet) {
-                const clean = word.replace(/['-]/g, '');
-                if (clean.length >= input.length || clean.length < minLen) continue;
+                const clean = word.replace(/['-]/g, '').toLowerCase();
+                if (clean.length < baseWord.length || clean.length < minLen || clean === baseWord) continue;
                 
+                const wordCounts = {};
+                for (const l of clean) wordCounts[l] = (wordCounts[l] || 0) + 1;
+                
+                let valid = true;
+                for (const l in baseCounts) { if ((wordCounts[l] || 0) < baseCounts[l]) { valid = false; break; } }
+                if (valid) results.push({ word, extra: clean.length - baseWord.length });
+            }
+            
+            results.sort((a, b) => a.extra - b.extra || a.word.localeCompare(b.word));
+            
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            document.getElementById('resultsCount').textContent = `${results.length} superanagrammi di "${baseWord.toUpperCase()}"`;
+            
+            if (results.length === 0) { container.innerHTML = '<div class="no-results">Nessun superanagramma trovato 😕</div>'; card.classList.remove('hidden'); return; }
+            
+            const byExtra = {};
+            for (const r of results) { if (!byExtra[r.extra]) byExtra[r.extra] = []; byExtra[r.extra].push(r.word); }
+            
+            let html = '';
+            let anyTruncated = false;
+            for (const extra of Object.keys(byExtra).map(Number).sort((a,b) => a-b)) {
+                const label = extra === 0 ? 'Anagrammi perfetti' : `+${extra} letter${extra === 1 ? 'a' : 'e'}`;
+                const words = byExtra[extra];
+                const truncated = words.length > CONFIG.maxSuperanagramsPerGroup;
+                if (truncated) anyTruncated = true;
+                html += `<div class="results-section"><h4>${label} (${words.length}${truncated ? '+' : ''})</h4><div class="results-grid">${words.slice(0, CONFIG.maxSuperanagramsPerGroup).map(w => wordSpan(w)).join('')}</div>${truncated ? '<div class="no-results-small">...e altri ' + (words.length - CONFIG.maxSuperanagramsPerGroup) + '</div>' : ''}</div>`;
+            }
+            if (anyTruncated) {
+                html += `<div class="truncated-warning">⚠️ Visualizzazione limitata a ${CONFIG.maxSuperanagramsPerGroup} parole per gruppo.</div>`;
+            }
+            container.innerHTML = html;
+            card.classList.remove('hidden');
+        }
+        
+        function findPatternAnagrams(baseWord, pattern, minLen, multiWord, maxWords) {
+            const vowelsArr = VOWELS.split('');
+            const consonantsArr = CONSONANTS.split('');
+            const allLetters = [...vowelsArr, ...consonantsArr];
+            
+            const charSets = [];
+            for (const char of pattern) {
+                if (char === '+') charSets.push(vowelsArr);
+                else if (char === '-') charSets.push(consonantsArr);
+                else if (char === '?') charSets.push(allLetters);
+            }
+            
+            if (charSets.length === 0) { alert('Pattern non valido'); return; }
+            
+            let totalComb = 1;
+            for (const set of charSets) totalComb *= set.length;
+            if (totalComb > CONFIG.maxPatternCombinations) { alert(`Troppe combinazioni (${totalComb.toLocaleString()}). Usa meno caratteri jolly.`); return; }
+            
+            const allResults = new Map();
+            
+            function generate(index, letters) {
+                if (index === charSets.length) {
+                    const testWord = baseWord + letters.join('');
+                    const sig = getSignature(testWord);
+                    const words = dictIndex.get(sig) || [];
+                    if (words.length > 0 && !allResults.has(sig)) {
+                        allResults.set(sig, { words: words.filter(w => w.toLowerCase() !== testWord), added: letters.join('').toUpperCase(), testWord });
+                    }
+                    return;
+                }
+                for (const letter of charSets[index]) { letters.push(letter); generate(index + 1, letters); letters.pop(); }
+            }
+            generate(0, []);
+            
+            const singleResults = [], multiResults = [], seen = new Set();
+            
+            for (const [sig, data] of allResults) {
+                for (const word of data.words) { if (!seen.has(word)) { seen.add(word); singleResults.push({ word, added: data.added }); } }
+                if (multiWord && data.testWord.length <= 15) {
+                    const multi = findMultiWordAnagrams(data.testWord, maxWords, minLen);
+                    for (const arr of multi) { const key = arr.sort().join('+'); if (!seen.has(key)) { seen.add(key); multiResults.push({ words: arr, added: data.added }); } }
+                }
+            }
+            
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            const total = singleResults.length + multiResults.length;
+            document.getElementById('resultsCount').textContent = `${total} risultat${total === 1 ? 'o' : 'i'} per "${baseWord.toUpperCase()}${pattern}"`;
+            
+            if (total === 0) { container.innerHTML = '<div class="no-results">Nessun anagramma trovato 😕</div>'; card.classList.remove('hidden'); return; }
+            
+            let html = '';
+            if (singleResults.length > 0) {
+                const byAdded = {};
+                for (const r of singleResults) { if (!byAdded[r.added]) byAdded[r.added] = []; byAdded[r.added].push(r.word); }
+                html += `<div class="results-section"><h4>🎯 Anagrammi singoli (${singleResults.length})</h4>`;
+                for (const added of Object.keys(byAdded).sort()) {
+                    html += `<div class="length-group"><div class="length-label">+${added} (${byAdded[added].length})</div><div class="results-grid">${byAdded[added].map(w => wordSpan(w)).join('')}</div></div>`;
+                }
+                html += '</div>';
+            }
+            if (multiResults.length > 0) {
+                const byAdded = {};
+                for (const r of multiResults) { if (!byAdded[r.added]) byAdded[r.added] = []; byAdded[r.added].push(r.words); }
+                html += `<div class="results-section"><h4>🔗 Multi-parola (${multiResults.length})</h4>`;
+                for (const added of Object.keys(byAdded).sort()) {
+                    html += `<div class="length-group"><div class="length-label">+${added} (${byAdded[added].length})</div><div class="results-grid">${byAdded[added].map(arr => `<span class="result-word result-multi">${arr.map(escapeHtml).join(' + ')}</span>`).join('')}</div></div>`;
+                }
+                html += '</div>';
+            }
+            container.innerHTML = html;
+            card.classList.remove('hidden');
+        }
+        
+        function findPartialAnagrams(input, minLen) {
+            const results = [], lc = {};
+            for (const l of input) lc[l] = (lc[l] || 0) + 1;
+            for (const word of wordSet) {
+                const clean = word.replace(/['-]/g, '').toLowerCase();
+                if (clean.length >= input.length || clean.length < minLen) continue;
                 const wc = {};
                 let valid = true;
                 for (const l of clean) { wc[l] = (wc[l] || 0) + 1; if (wc[l] > (lc[l] || 0)) { valid = false; break; } }
                 if (valid) results.push(word);
             }
-            
             results.sort((a, b) => b.length - a.length || a.localeCompare(b));
             return results;
         }
@@ -948,42 +1426,42 @@
         function findMultiWordAnagrams(input, maxWords, minLen) {
             const results = [], letters = input.split('').sort(), seen = new Set();
             const candidates = findCandidates(letters, minLen);
-            
-            function search(rem, cur, depth) {
-                if (rem.length === 0 && cur.length >= 2) {
-                    const key = [...cur].sort().join(' ');
-                    if (!seen.has(key)) { seen.add(key); results.push([...cur]); }
-                    return;
-                }
-                if (depth >= maxWords || results.length >= 500) return;
-                
-                for (const word of candidates) {
+            let truncated = false;
+            // FIX: startIdx impedisce di riproporre candidati già usati prima nella lista,
+            // eliminando permutazioni duplicate (A+B vs B+A) senza dover aspettare il seen check.
+            function search(rem, cur, depth, startIdx) {
+                if (rem.length === 0 && cur.length >= 2) { const key = [...cur].sort().join(' '); if (!seen.has(key)) { seen.add(key); results.push([...cur]); } return; }
+                if (depth >= maxWords || results.length >= CONFIG.maxMultiWordResults) { if (results.length >= CONFIG.maxMultiWordResults) truncated = true; return; }
+                // Pruning: se le lettere rimaste sono meno di minLen, non possiamo formare altre parole
+                if (rem.length > 0 && rem.length < minLen) return;
+                // Pruning: se non abbiamo abbastanza lettere per raggiungere 2 parole
+                const wordsNeeded = Math.max(0, 2 - cur.length);
+                if (rem.length < minLen * wordsNeeded) return;
+                for (let i = startIdx; i < candidates.length; i++) {
+                    const word = candidates[i];
                     const wl = word.replace(/['-]/g, '').split('').sort();
                     if (wl.length > rem.length || wl.length < minLen) continue;
                     const newRem = trySubtract(rem, wl);
-                    if (newRem) { cur.push(word); search(newRem, cur, depth + 1); cur.pop(); }
+                    if (newRem) { cur.push(word); search(newRem, cur, depth + 1, i); cur.pop(); }
                 }
             }
-            
-            search(letters, [], 0);
+            search(letters, [], 0, 0);
+            results.truncated = truncated;
             return results;
         }
         
         function findCandidates(letters, minLen) {
             const candidates = [], lc = {};
             for (const l of letters) lc[l] = (lc[l] || 0) + 1;
-            
             for (const word of wordSet) {
                 if (word.length < minLen) continue;
                 const clean = word.replace(/['-]/g, '');
                 if (clean.length > letters.length) continue;
-                
                 const wc = {};
                 let valid = true;
                 for (const l of clean) { wc[l] = (wc[l] || 0) + 1; if (wc[l] > (lc[l] || 0)) { valid = false; break; } }
                 if (valid) candidates.push(word);
             }
-            
             candidates.sort((a, b) => b.length - a.length);
             return candidates;
         }
@@ -998,42 +1476,28 @@
             const container = document.getElementById('resultsContainer');
             const card = document.getElementById('resultsCard');
             const total = single.length + multi.length + partial.length;
+            document.getElementById('resultsCount').textContent = `${total}${multi.truncated ? '+' : ''} risultat${total === 1 ? 'o' : 'i'} per "${input}"`;
             
-            document.getElementById('resultsCount').textContent = `${total} risultat${total === 1 ? 'o' : 'i'} per "${input}"`;
-            
-            let html = '';
-            
-            // Anagrammi perfetti - sempre visibile
-            html += `<div class="results-section"><h4>🎯 Anagrammi perfetti (${single.length})</h4>`;
-            if (single.length > 0) {
-                html += `<div class="results-grid">${single.map(w => wordSpan(w)).join('')}</div>`;
-            } else {
-                html += `<div class="no-results-small">Nessuno</div>`;
-            }
+            let html = `<div class="results-section"><h4>🎯 Anagrammi perfetti (${single.length})</h4>`;
+            html += single.length > 0 ? `<div class="results-grid">${single.map(w => wordSpan(w)).join('')}</div>` : `<div class="no-results-small">Nessuno</div>`;
             html += `</div>`;
             
-            // Multi-parola - sempre visibile se opzione attiva
             if (document.getElementById('chkMulti').checked) {
-                html += `<div class="results-section"><h4>🔗 Multi-parola (${multi.length})</h4>`;
-                if (multi.length > 0) {
-                    html += `<div class="results-grid">${multi.map(arr => `<span class="result-word result-multi">${arr.map(escapeHtml).join(' + ')}</span>`).join('')}</div>`;
-                } else {
-                    html += `<div class="no-results-small">Nessuno</div>`;
+                html += `<div class="results-section"><h4>🔗 Multi-parola (${multi.length}${multi.truncated ? '+' : ''})</h4>`;
+                html += multi.length > 0 ? `<div class="results-grid">${multi.map(arr => `<span class="result-word result-multi">${arr.map(escapeHtml).join(' + ')}</span>`).join('')}</div>` : `<div class="no-results-small">Nessuno</div>`;
+                if (multi.truncated) {
+                    html += `<div class="truncated-warning">⚠️ Multi-parola troncati a ${CONFIG.maxMultiWordResults}.</div>`;
                 }
                 html += `</div>`;
             }
             
-            // Parole incluse - sempre visibile se opzione attiva
             if (document.getElementById('chkPartial').checked) {
                 html += `<div class="results-section"><h4>📦 Parole incluse (${partial.length})</h4>`;
                 if (partial.length > 0) {
                     const byLen = {};
                     for (const w of partial) { const len = w.replace(/['-]/g, '').length; if (!byLen[len]) byLen[len] = []; byLen[len].push(w); }
-                    const lengths = Object.keys(byLen).map(Number).sort((a, b) => b - a);
-                    html += lengths.map(len => `<div class="length-group"><div class="length-label">${len} lettere (${byLen[len].length})</div><div class="results-grid">${byLen[len].map(w => wordSpan(w, 'result-partial')).join('')}</div></div>`).join('');
-                } else {
-                    html += `<div class="no-results-small">Nessuna</div>`;
-                }
+                    html += Object.keys(byLen).map(Number).sort((a,b) => b-a).map(len => `<div class="length-group"><div class="length-label">${len} lettere (${byLen[len].length})</div><div class="results-grid">${byLen[len].map(w => wordSpan(w, 'result-partial')).join('')}</div></div>`).join('');
+                } else html += `<div class="no-results-small">Nessuna</div>`;
                 html += `</div>`;
             }
             
@@ -1041,32 +1505,501 @@
             card.classList.remove('hidden');
         }
         
+        // FIX: escape sia HTML che JS per evitare injection con apostrofi
+        function escapeForJs(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+        
         function wordSpan(word, extra = '') {
             const isCustom = customWords.has(word);
             const cls = `result-word ${extra} ${isCustom ? 'result-custom' : ''}`.trim();
-            const esc = escapeHtml(word);
-            return `<span class="${cls}" onclick="searchWord('${esc}')" oncontextmenu="showContextMenu(event, '${esc}')" ontouchstart="handleWordTouchStart(event, '${esc}')" ontouchend="handleWordTouchEnd()" ontouchmove="handleWordTouchEnd()">${esc}</span>`;
+            const escHtml = escapeHtml(word);
+            const escJs = escapeForJs(word); // FIX: escape separato per JS
+            return `<span class="${cls}" onclick="searchWord('${escJs}')" oncontextmenu="showContextMenu(event, '${escJs}')" ontouchstart="handleWordTouchStart(event, '${escJs}')" ontouchend="handleWordTouchEnd()" ontouchmove="handleWordTouchEnd()">${escHtml}</span>`;
         }
         
-        function searchWord(word) { 
-            switchTab('anagrammi');
-            document.getElementById('inputWord').value = word; 
-            findAnagrams(); 
-        }
-        
+        function searchWord(word) { switchTab('anagrammi'); document.getElementById('inputWord').value = word; findAnagrams(); }
         function escapeHtml(str) { return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
-        
         function updateStatus(type, text) { document.getElementById('dictStatus').className = 'status ' + type; document.getElementById('statusText').textContent = text; }
         function updateLoadingText(text) { document.getElementById('loadingText').textContent = text; }
         function updateProgress(percent) { document.getElementById('progressFill').style.width = percent + '%'; }
-        
         function showError(msg) { const el = document.getElementById('infoMessage'); el.textContent = msg; el.className = 'info-message error'; el.classList.remove('hidden'); }
         function showSuccess(msg) { const el = document.getElementById('infoMessage'); el.textContent = msg; el.className = 'info-message success'; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 2500); }
         function handleKeyUp(e, tab) { if (e.key === 'Enter') { if (tab === 'anagrammi') findAnagrams(); else searchPattern(); } }
         function formatNumber(n) { return n.toLocaleString('it-IT'); }
+        
+        // Tooltip live per pattern anagrammi
+        function updatePatternTooltip() {
+            const input = document.getElementById('inputWord').value.trim().toLowerCase();
+            const tooltip = document.getElementById('patternTooltip');
+            
+            const patternMatch = input.match(/^([a-zàèéìòùâêîôûäëïöüç]+)([\+\-\?\*]+)$/i);
+            if (!patternMatch) {
+                tooltip.classList.add('hidden');
+                return;
+            }
+            
+            const baseWord = patternMatch[1];
+            const pattern = patternMatch[2];
+            
+            if (pattern === '*') {
+                tooltip.innerHTML = `<strong>${baseWord.toUpperCase()}*</strong> → superanagrammi (parole che contengono tutte le lettere di ${baseWord.toUpperCase()})`;
+                tooltip.classList.remove('hidden');
+                return;
+            }
+            
+            if (pattern.includes('*')) {
+                tooltip.innerHTML = `<strong>⚠️</strong> Il carattere * deve essere usato da solo`;
+                tooltip.classList.remove('hidden');
+                return;
+            }
+            
+            const parts = [];
+            let vowelCount = 0, consCount = 0, anyCount = 0;
+            for (const char of pattern) {
+                if (char === '+') vowelCount++;
+                else if (char === '-') consCount++;
+                else if (char === '?') anyCount++;
+            }
+            
+            if (vowelCount > 0) parts.push(`${vowelCount} vocale${vowelCount > 1 ? 'i' : ''}`);
+            if (consCount > 0) parts.push(`${consCount} consonante${consCount > 1 ? 'i' : ''}`);
+            if (anyCount > 0) parts.push(`${anyCount} lettera${anyCount > 1 ? 'e' : ''} qualsiasi`);
+            
+            const vow = VOWELS.length;
+            const cons = CONSONANTS.length;
+            const all = vow + cons;
+            const combinations = Math.pow(vow, vowelCount) * Math.pow(cons, consCount) * Math.pow(all, anyCount);
+            
+            let combWarning = '';
+            if (combinations > CONFIG.maxPatternCombinations) {
+                combWarning = ` <strong style="color:#e74c3c">⚠️ troppe!</strong>`;
+            } else if (combinations > 10000) {
+                combWarning = ` <span style="color:#f39c12">(lento)</span>`;
+            }
+            
+            tooltip.innerHTML = `<strong>${baseWord.toUpperCase()}${pattern}</strong> → ${baseWord.toUpperCase()} + ${parts.join(' + ')} <span style="color:#7f8c8d">(${formatNumber(combinations)} combinazioni${combWarning})</span>`;
+            tooltip.classList.remove('hidden');
+        }
+        
+        // Copia risultati negli appunti
+        function copyResults() {
+            const container = document.getElementById('resultsContainer');
+            const btn = document.getElementById('btnCopy');
+            
+            // Estrai testo pulito
+            const words = [];
+            container.querySelectorAll('.result-word').forEach(el => {
+                words.push(el.textContent.trim());
+            });
+            
+            // Se ci sono catene cambi o bifronti, prendi tutto il testo
+            const chains = container.querySelectorAll('.cambi-chain, .bifronte-pair');
+            chains.forEach(el => {
+                words.push(el.textContent.replace(/\s+/g, ' ').trim());
+            });
+            
+            if (words.length === 0) {
+                words.push(container.textContent.trim());
+            }
+            
+            const text = words.join('\n');
+            
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = '✅ Copiato!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copia';
+                    btn.classList.remove('copied');
+                }, 1500);
+            }).catch(() => {
+                btn.textContent = '❌ Errore';
+                setTimeout(() => { btn.textContent = '📋 Copia'; }, 1500);
+            });
+        }
+        
+        // ==================== QUIZ ====================
+        
+        function buildQuizCandidates() {
+            quizCandidates = [];
+            for (const [sig, words] of dictIndex.entries()) {
+                if (words.length >= 2) {
+                    // FIX: filtra parole rimosse
+                    const validWords = words.filter(w => !removedWords.has(w));
+                    if (validWords.length >= 2) {
+                        for (const w of validWords) {
+                            const clean = w.replace(/['-]/g, '');
+                            quizCandidates.push({ word: w, clean, length: clean.length, anagramCount: validWords.length - 1, signature: sig });
+                        }
+                    }
+                }
+            }
+        }
+        
+        function startQuiz() {
+            const minLen = parseInt(document.getElementById('selQuizMinLen').value);
+            const maxLen = parseInt(document.getElementById('selQuizMaxLen').value);
+            const minAnagrams = parseInt(document.getElementById('selQuizMinAnagrams').value);
+            const filtered = quizCandidates.filter(c => c.length >= minLen && c.length <= maxLen && c.anagramCount >= minAnagrams);
+            if (filtered.length === 0) { alert('Nessuna parola trovata con questi criteri.'); return; }
+            quizActive = true; quizStreak = 0; quizScore = 0;
+            quizTransitioning = false; // FIX: reset flag
+            document.getElementById('quizStart').classList.add('hidden');
+            document.getElementById('quizGame').classList.remove('hidden');
+            document.getElementById('quizInput').disabled = false;
+            updateQuizStats();
+            nextQuizWord(filtered);
+        }
+        
+        function nextQuizWord(filtered) {
+            // FIX: previeni chiamate multiple durante transizione
+            if (quizTransitioning) return;
+            quizTransitioning = true;
+            
+            if (quizTimer) { clearInterval(quizTimer); quizTimer = null; }
+            if (!filtered) {
+                const minLen = parseInt(document.getElementById('selQuizMinLen').value);
+                const maxLen = parseInt(document.getElementById('selQuizMaxLen').value);
+                const minAnagrams = parseInt(document.getElementById('selQuizMinAnagrams').value);
+                filtered = quizCandidates.filter(c => c.length >= minLen && c.length <= maxLen && c.anagramCount >= minAnagrams);
+            }
+            const candidate = filtered[Math.floor(Math.random() * filtered.length)];
+            quizWord = candidate.word;
+            // FIX: filtra parole rimosse dagli anagrammi
+            const allAnagrams = (dictIndex.get(candidate.signature) || []).filter(w => !removedWords.has(w));
+            let singleAnagrams = allAnagrams.filter(w => w.toLowerCase() !== quizWord.toLowerCase());
+            let multiAnagrams = [];
+            const cleanWord = quizWord.replace(/['-]/g, '');
+            if (cleanWord.length >= 7) {
+                const multi = findMultiWordAnagrams(cleanWord, cleanWord.length >= 10 ? 3 : 2, 3);
+                multiAnagrams = multi.slice(0, 10).map(arr => arr.join(' + '));
+            }
+            quizAnagrams = [...singleAnagrams, ...multiAnagrams];
+            quizFound = [];
+            document.getElementById('quizWord').textContent = quizWord.toUpperCase();
+            document.getElementById('quizPrompt').textContent = `Trova ${quizAnagrams.length} anagramm${quizAnagrams.length === 1 ? 'a' : 'i'}${multiAnagrams.length > 0 ? ` (${multiAnagrams.length} multi)` : ''}`;
+            document.getElementById('quizFound').innerHTML = '';
+            document.getElementById('quizProgressFill').style.width = '0%';
+            document.getElementById('quizFeedback').textContent = '\u00A0';
+            document.getElementById('quizFeedback').className = 'quiz-feedback empty';
+            document.getElementById('quizInput').value = '';
+            document.getElementById('quizInput').focus();
+            quizTimeLeft = 60;
+            updateTimerDisplay();
+            
+            quizTransitioning = false; // FIX: fine transizione
+            quizTimer = setInterval(quizTick, 1000);
+        }
+        
+        function quizTick() { quizTimeLeft--; updateTimerDisplay(); if (quizTimeLeft <= 0) { clearInterval(quizTimer); quizTimer = null; quizTimeout(); } }
+        function updateTimerDisplay() { const el = document.getElementById('quizTimer'); el.textContent = quizTimeLeft; el.classList.toggle('warning', quizTimeLeft <= 10); }
+        
+        function quizTimeout() {
+            // FIX: check se già in transizione
+            if (quizTransitioning || !quizActive) return;
+            
+            const missed = quizAnagrams.filter(w => !quizFound.map(f => f.toLowerCase()).includes(w.toLowerCase()));
+            const foundEl = document.getElementById('quizFound');
+            for (const word of missed) foundEl.innerHTML += `<span class="quiz-found-word missed">${escapeHtml(word)}</span>`;
+            quizStreak = 0; updateQuizStats();
+            document.getElementById('quizFeedback').textContent = '⏱️ Tempo scaduto!';
+            document.getElementById('quizFeedback').className = 'quiz-feedback wrong';
+            document.getElementById('quizProgressFill').style.width = '100%';
+            setTimeout(() => { if (quizActive) nextQuizWord(); }, 2500);
+        }
+        
+        function handleQuizKeyUp(e) { if (e.key === 'Enter') checkQuizAnswer(); }
+        
+        function checkQuizAnswer() {
+            // FIX: ignora input durante transizione
+            if (quizTransitioning) return;
+            
+            const rawInput = document.getElementById('quizInput').value.trim().toLowerCase();
+            const feedback = document.getElementById('quizFeedback');
+            if (!rawInput) return;
+            document.getElementById('quizInput').value = '';
+            const normalize = (str) => str.toLowerCase().split(/[\s+]+/).filter(w => w.length > 0).sort().join(' + ');
+            const normalizedInput = normalize(rawInput);
+            if (quizFound.map(f => normalize(f)).includes(normalizedInput)) { feedback.textContent = '🔄 Già trovata!'; feedback.className = 'quiz-feedback duplicate'; return; }
+            const matchIndex = quizAnagrams.map(a => normalize(a)).indexOf(normalizedInput);
+            if (matchIndex !== -1) {
+                const original = quizAnagrams[matchIndex];
+                quizFound.push(original); quizScore += 10;
+                document.getElementById('quizFound').innerHTML += `<span class="quiz-found-word">${escapeHtml(original)}</span>`;
+                document.getElementById('quizProgressFill').style.width = (quizFound.length / quizAnagrams.length * 100) + '%';
+                if (quizFound.length === quizAnagrams.length) {
+                    if (quizTimer) { clearInterval(quizTimer); quizTimer = null; }
+                    quizStreak++; quizScore += quizAnagrams.length * 5 + quizTimeLeft; updateQuizStats();
+                    feedback.textContent = `🎉 Perfetto! +${quizTimeLeft} bonus`;
+                    feedback.className = 'quiz-feedback correct';
+                    setTimeout(() => { if (quizActive) nextQuizWord(); }, 1500);
+                } else { feedback.textContent = `✅ Bravo! Ancora ${quizAnagrams.length - quizFound.length}`; feedback.className = 'quiz-feedback correct'; }
+                updateQuizStats();
+            } else { feedback.textContent = `❌ "${rawInput}" non è un anagramma`; feedback.className = 'quiz-feedback wrong'; }
+        }
+        
+        function skipQuizWord() {
+            // FIX: ignora se già in transizione
+            if (quizTransitioning || !quizActive) return;
+            
+            if (quizTimer) { clearInterval(quizTimer); quizTimer = null; }
+            const missed = quizAnagrams.filter(w => !quizFound.map(f => f.toLowerCase()).includes(w.toLowerCase()));
+            const foundEl = document.getElementById('quizFound');
+            for (const word of missed) foundEl.innerHTML += `<span class="quiz-found-word missed">${escapeHtml(word)}</span>`;
+            quizStreak = 0; updateQuizStats();
+            document.getElementById('quizFeedback').textContent = '⏭️ Passato!';
+            document.getElementById('quizFeedback').className = 'quiz-feedback wrong';
+            document.getElementById('quizProgressFill').style.width = '100%';
+            setTimeout(() => { if (quizActive) nextQuizWord(); }, 2000);
+        }
+        
+        function endQuiz() {
+            if (quizTimer) { clearInterval(quizTimer); quizTimer = null; }
+            quizActive = false;
+            quizTransitioning = false; // FIX: reset flag
+            document.getElementById('quizStart').classList.remove('hidden');
+            document.getElementById('quizGame').classList.add('hidden');
+            document.getElementById('quizInput').disabled = true;
+        }
+        
+        function updateQuizStats() { document.getElementById('quizStreak').textContent = quizStreak; document.getElementById('quizScore').textContent = quizScore; }
+        
+        // ==================== GIOCHI ====================
+        
+        function findCambi() {
+            const start = document.getElementById('cambiStart').value.trim().toLowerCase();
+            const end = document.getElementById('cambiEnd').value.trim().toLowerCase();
+            if (!start || !end) { alert('Inserisci entrambe le parole'); return; }
+            if (start.length !== end.length) { alert('Stessa lunghezza richiesta'); return; }
+            if (!wordSet.has(start)) { alert(`"${start}" non nel dizionario`); return; }
+            if (!wordSet.has(end)) { alert(`"${end}" non nel dizionario`); return; }
+            if (start === end) { alert('Devono essere diverse'); return; }
+            
+            const len = start.length;
+            const wordsOfLen = wordsByLength[len] || []; // Usa pre-indice
+            const queue = [[start]], visited = new Set([start]);
+            let found = null;
+            
+            while (queue.length > 0 && !found) {
+                const path = queue.shift();
+                const current = path[path.length - 1];
+                for (const word of wordsOfLen) {
+                    if (visited.has(word)) continue;
+                    if (differsByOne(current, word)) {
+                        const newPath = [...path, word];
+                        if (word === end) { found = newPath; break; }
+                        visited.add(word); queue.push(newPath);
+                    }
+                }
+                if (visited.size > CONFIG.maxCambiNodes) break;
+            }
+            
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            if (!found) {
+                document.getElementById('resultsCount').textContent = 'Nessuna catena trovata';
+                container.innerHTML = `<div class="no-results">Impossibile collegare "${start.toUpperCase()}" a "${end.toUpperCase()}" 😕</div>`;
+            } else {
+                document.getElementById('resultsCount').textContent = `Catena di ${found.length} parole (${found.length - 1} cambi)`;
+                container.innerHTML = '<div class="cambi-chain">' + found.map((w, i) => `<span class="cambi-step${i === 0 ? ' start' : i === found.length - 1 ? ' end' : ''}">${escapeHtml(w)}</span>${i < found.length - 1 ? '<span class="cambi-step-arrow">→</span>' : ''}`).join('') + '</div>';
+            }
+            card.classList.remove('hidden');
+        }
+        
+        function differsByOne(a, b) { if (a.length !== b.length) return false; let diff = 0; for (let i = 0; i < a.length; i++) { if (a[i] !== b[i]) diff++; if (diff > 1) return false; } return diff === 1; }
+        
+        function findPalindromi() {
+            const minLen = parseInt(document.getElementById('selPalMinLen').value);
+            const maxLen = parseInt(document.getElementById('selPalMaxLen').value);
+            const results = [];
+            for (const word of wordSet) {
+                const clean = word.replace(/['-]/g, '').toLowerCase();
+                if (clean.length < minLen || clean.length > maxLen) continue;
+                let isPal = true;
+                for (let i = 0; i < clean.length / 2; i++) { if (clean[i] !== clean[clean.length - 1 - i]) { isPal = false; break; } }
+                if (isPal) results.push(word);
+            }
+            results.sort((a, b) => a.length - b.length || a.localeCompare(b));
+            displayGameResults('palindrom', results);
+        }
+        
+        function findBifronti() {
+            const minLen = parseInt(document.getElementById('selBifMinLen').value);
+            const maxLen = parseInt(document.getElementById('selBifMaxLen').value);
+            const results = [], seen = new Set();
+            for (const word of wordSet) {
+                const clean = word.replace(/['-]/g, '').toLowerCase();
+                if (clean.length < minLen || clean.length > maxLen) continue;
+                const reversed = clean.split('').reverse().join('');
+                if (reversed === clean) continue;
+                if (wordSet.has(reversed)) {
+                    const key = [clean, reversed].sort().join('|');
+                    if (!seen.has(key)) { seen.add(key); results.push([word, reversed]); }
+                }
+            }
+            results.sort((a, b) => a[0].length - b[0].length || a[0].localeCompare(b[0]));
+            
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            document.getElementById('resultsCount').textContent = `${results.length} copp${results.length === 1 ? 'ia' : 'ie'} di bifronti`;
+            if (results.length === 0) { container.innerHTML = '<div class="no-results">Nessun bifronte trovato 😕</div>'; }
+            else {
+                const byLen = {};
+                for (const pair of results) { const len = pair[0].length; if (!byLen[len]) byLen[len] = []; byLen[len].push(pair); }
+                container.innerHTML = Object.keys(byLen).map(Number).sort((a,b) => a-b).map(len => `<div class="results-section"><h4>${len} lettere (${byLen[len].length})</h4><div class="results-grid">${byLen[len].map(p => `<span class="bifronte-pair"><span onclick="searchWord('${escapeForJs(p[0])}')" style="cursor:pointer">${escapeHtml(p[0])}</span><span class="bifronte-arrow">↔</span><span onclick="searchWord('${escapeForJs(p[1])}')" style="cursor:pointer">${escapeHtml(p[1])}</span></span>`).join('')}</div></div>`).join('');
+            }
+            card.classList.remove('hidden');
+        }
+        
+        function displayGameResults(type, results) {
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            const label = type === 'palindrom' ? ['palindromo', 'palindromi'] : [type, type + 'i'];
+            document.getElementById('resultsCount').textContent = `${results.length} ${results.length === 1 ? label[0] : label[1]}`;
+            if (results.length === 0) { container.innerHTML = '<div class="no-results">Nessun risultato 😕</div>'; }
+            else {
+                const byLen = {};
+                for (const w of results) { const len = w.replace(/['-]/g, '').length; if (!byLen[len]) byLen[len] = []; byLen[len].push(w); }
+                container.innerHTML = Object.keys(byLen).map(Number).sort((a,b) => a-b).map(len => `<div class="results-section"><h4>${len} lettere (${byLen[len].length})</h4><div class="results-grid">${byLen[len].map(w => wordSpan(w)).join('')}</div></div>`).join('');
+            }
+            card.classList.remove('hidden');
+        }
+        
+        function findScarti() {
+            const input = document.getElementById('scartiInput').value.trim().toLowerCase();
+            if (!input) { alert('Inserisci una parola'); return; }
+            if (!wordSet.has(input)) { alert(`"${input}" non nel dizionario`); return; }
+            const results = [], clean = input.replace(/['-]/g, '');
+            for (let i = 0; i < clean.length; i++) {
+                const shortened = clean.slice(0, i) + clean.slice(i + 1);
+                if (shortened.length >= 2 && wordSet.has(shortened)) results.push({ word: shortened, removed: clean[i].toUpperCase() });
+            }
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            document.getElementById('resultsCount').textContent = `${results.length} scart${results.length === 1 ? 'o' : 'i'} per "${input.toUpperCase()}"`;
+            container.innerHTML = results.length === 0 ? '<div class="no-results">Nessuno scarto trovato 😕</div>' : `<div class="results-section"><div class="results-grid">${results.map(r => `<span class="result-word" onclick="searchWord('${escapeForJs(r.word)}')" style="cursor:pointer"><strong>−${r.removed}</strong> → ${escapeHtml(r.word.toUpperCase())}</span>`).join('')}</div></div>`;
+            card.classList.remove('hidden');
+        }
+        
+        function findZeppe() {
+            const input = document.getElementById('zeppeInput').value.trim().toLowerCase();
+            if (!input) { alert('Inserisci una parola'); return; }
+            if (!wordSet.has(input)) { alert(`"${input}" non nel dizionario`); return; }
+            const results = [], clean = input.replace(/['-]/g, ''), alphabet = 'abcdefghijklmnopqrstuvwxyzàèéìòù', seen = new Set();
+            for (let i = 1; i < clean.length; i++) {
+                for (const letter of alphabet) {
+                    const zeppata = clean.slice(0, i) + letter + clean.slice(i);
+                    if (wordSet.has(zeppata) && !seen.has(zeppata)) { seen.add(zeppata); results.push({ word: zeppata, added: letter.toUpperCase() }); }
+                }
+            }
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            document.getElementById('resultsCount').textContent = `${results.length} zepp${results.length === 1 ? 'a' : 'e'} per "${input.toUpperCase()}"`;
+            container.innerHTML = results.length === 0 ? '<div class="no-results">Nessuna zeppa trovata 😕</div>' : `<div class="results-section"><div class="results-grid">${results.map(r => `<span class="result-word" onclick="searchWord('${escapeForJs(r.word)}')" style="cursor:pointer"><strong>+${r.added}</strong> → ${escapeHtml(r.word.toUpperCase())}</span>`).join('')}</div></div>`;
+            card.classList.remove('hidden');
+        }
+        
+        function findAggiunte() {
+            const input = document.getElementById('aggiunteInput').value.trim().toLowerCase();
+            if (!input) { alert('Inserisci una parola'); return; }
+            if (!wordSet.has(input)) { alert(`"${input}" non nel dizionario`); return; }
+            const checkInizio = document.getElementById('chkAggiuntaInizio').checked;
+            const checkFine = document.getElementById('chkAggiuntaFine').checked;
+            const inizioResults = [], fineResults = [], clean = input.replace(/['-]/g, ''), alphabet = 'abcdefghijklmnopqrstuvwxyzàèéìòù';
+            for (const letter of alphabet) {
+                if (checkInizio) { const w = letter + clean; if (wordSet.has(w)) inizioResults.push({ word: w, added: letter.toUpperCase() }); }
+                if (checkFine) { const w = clean + letter; if (wordSet.has(w)) fineResults.push({ word: w, added: letter.toUpperCase() }); }
+            }
+            const total = inizioResults.length + fineResults.length;
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            document.getElementById('resultsCount').textContent = `${total} aggiunt${total === 1 ? 'a' : 'e'} per "${input.toUpperCase()}"`;
+            let html = '';
+            if (inizioResults.length > 0) html += `<div class="results-section"><h4>⬅️ Iniziali (${inizioResults.length})</h4><div class="results-grid">${inizioResults.map(r => `<span class="result-word" onclick="searchWord('${escapeForJs(r.word)}')" style="cursor:pointer"><strong>${r.added}+</strong> → ${escapeHtml(r.word.toUpperCase())}</span>`).join('')}</div></div>`;
+            if (fineResults.length > 0) html += `<div class="results-section"><h4>➡️ Finali (${fineResults.length})</h4><div class="results-grid">${fineResults.map(r => `<span class="result-word" onclick="searchWord('${escapeForJs(r.word)}')" style="cursor:pointer"><strong>+${r.added}</strong> → ${escapeHtml(r.word.toUpperCase())}</span>`).join('')}</div></div>`;
+            container.innerHTML = total === 0 ? '<div class="no-results">Nessuna aggiunta trovata 😕</div>' : html;
+            card.classList.remove('hidden');
+        }
+        
+        function findSciarade() {
+            const input = document.getElementById('sciaradeInput').value.trim().toLowerCase();
+            if (!input) { alert('Inserisci una parola'); return; }
+            const clean = input.replace(/['-]/g, '');
+            if (clean.length < 4) { alert('Minimo 4 lettere'); return; }
+            const minPartLen = parseInt(document.getElementById('selSciaradeMinPart').value);
+            const maxParts = parseInt(document.getElementById('selSciaradeMaxParts').value);
+            const results = [];
+            function search(remaining, parts) {
+                if (remaining.length === 0) { if (parts.length >= 2) results.push([...parts]); return; }
+                if (parts.length >= maxParts || results.length >= 100) return;
+                for (let i = minPartLen; i <= remaining.length; i++) {
+                    const prefix = remaining.slice(0, i), rest = remaining.slice(i);
+                    if (wordSet.has(prefix)) {
+                        if (rest.length === 0) { parts.push(prefix); if (parts.length >= 2) results.push([...parts]); parts.pop(); }
+                        else if (rest.length >= minPartLen) { parts.push(prefix); search(rest, parts); parts.pop(); }
+                    }
+                }
+            }
+            search(clean, []);
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            document.getElementById('resultsCount').textContent = `${results.length} sciarad${results.length === 1 ? 'a' : 'e'} per "${input.toUpperCase()}"`;
+            if (results.length === 0) container.innerHTML = '<div class="no-results">Nessuna sciarada trovata 😕</div>';
+            else {
+                const byParts = {};
+                for (const r of results) { const n = r.length; if (!byParts[n]) byParts[n] = []; byParts[n].push(r); }
+                container.innerHTML = Object.keys(byParts).map(Number).sort((a,b) => a-b).map(n => `<div class="results-section"><h4>${n} parti (${byParts[n].length})</h4><div class="results-grid">${byParts[n].map(parts => `<span class="result-word result-multi">${parts.map(p => p.toUpperCase()).join(' + ')}</span>`).join('')}</div></div>`).join('');
+            }
+            card.classList.remove('hidden');
+        }
+        
+        function findSciaradeInverse() {
+            const minPartLen = parseInt(document.getElementById('selSciaradeMinPart').value);
+            const maxParts = parseInt(document.getElementById('selSciaradeMaxParts').value);
+            const results = [];
+            let checked = 0;
+            let truncatedCheck = false, truncatedResults = false;
+            // FIX: ordine deterministico - senza sort() i risultati variano tra sessioni
+            const sortedWords = Array.from(wordSet).sort();
+            for (const word of sortedWords) {
+                const clean = word.replace(/['-]/g, '');
+                if (clean.length < 6 || clean.length > 15) continue;
+                checked++;
+                if (checked > CONFIG.maxSciaradeInverseCheck) { truncatedCheck = true; break; }
+                const splits = [];
+                function search(remaining, parts) {
+                    if (remaining.length === 0) { if (parts.length >= 2) splits.push([...parts]); return; }
+                    if (parts.length >= maxParts || splits.length >= 3) return;
+                    for (let i = minPartLen; i <= remaining.length; i++) {
+                        const prefix = remaining.slice(0, i), rest = remaining.slice(i);
+                        if (wordSet.has(prefix)) {
+                            if (rest.length === 0) { parts.push(prefix); if (parts.length >= 2) splits.push([...parts]); parts.pop(); }
+                            else if (rest.length >= minPartLen) { parts.push(prefix); search(rest, parts); parts.pop(); }
+                        }
+                    }
+                }
+                search(clean, []);
+                if (splits.length > 0) results.push({ word, splits: splits.slice(0, 3) });
+                if (results.length >= CONFIG.maxSciaradeInverseResults) { truncatedResults = true; break; }
+            }
+            const container = document.getElementById('resultsContainer');
+            const card = document.getElementById('resultsCard');
+            document.getElementById('resultsCount').textContent = `${results.length}${truncatedResults ? '+' : ''} sciarade nel dizionario`;
+            if (results.length === 0) container.innerHTML = '<div class="no-results">Nessuna sciarada trovata 😕</div>';
+            else {
+                const byLen = {};
+                for (const r of results) { const len = r.word.length; if (!byLen[len]) byLen[len] = []; byLen[len].push(r); }
+                let html = Object.keys(byLen).map(Number).sort((a,b) => a-b).map(len => `<div class="results-section"><h4>${len} lettere (${byLen[len].length})</h4><div class="results-grid">${byLen[len].map(r => `<span class="result-word" onclick="document.getElementById('sciaradeInput').value='${escapeForJs(r.word)}';findSciarade();" style="cursor:pointer"><strong>${escapeHtml(r.word.toUpperCase())}</strong> = ${r.splits[0].map(p => p.toUpperCase()).join(' + ')}</span>`).join('')}</div></div>`).join('');
+                if (truncatedCheck || truncatedResults) {
+                    html += `<div class="truncated-warning">⚠️ Ricerca limitata (${formatNumber(checked)} parole analizzate, ${results.length} risultati). Usa "Scomponi" per parole specifiche.</div>`;
+                }
+                container.innerHTML = html;
+            }
+            card.classList.remove('hidden');
+        }
 
-        // ===== QUIZ FUNCTIONALITY =====
-        let quizState = {
+        // ===== SCRAMBLE GAME FUNCTIONALITY =====
+        let scrambleState = {
             active: false,
             currentWord: null,
             scrambled: null,
@@ -1084,20 +2017,17 @@
             difficulty: 'medium'
         };
 
-        function loadQuizStats() {
-            const bestScore = localStorage.getItem('quizBestScore') || 0;
-            const gamesPlayed = localStorage.getItem('quizGamesPlayed') || 0;
-            document.getElementById('bestScore').textContent = bestScore;
-            document.getElementById('gamesPlayed').textContent = gamesPlayed;
-
-            // Enable start button if dictionary loaded
-            document.getElementById('btnStartQuiz').disabled = !wordList || wordList.length === 0;
+        function loadScrambleStats() {
+            const bestScore = localStorage.getItem('scrambleBestScore') || 0;
+            const gamesPlayed = localStorage.getItem('scrambleGamesPlayed') || 0;
+            document.getElementById('scrambleBestScore').textContent = bestScore;
+            document.getElementById('scrambleGamesPlayed').textContent = gamesPlayed;
+            document.getElementById('btnStartScramble').disabled = !wordList || wordList.length === 0;
         }
 
-        function getRandomWord() {
-            const difficulty = document.getElementById('selDifficulty').value;
+        function getScrambleWord() {
+            const difficulty = document.getElementById('selScrambleDifficulty').value;
             let minLen, maxLen;
-
             if (difficulty === 'easy') {
                 minLen = 4; maxLen = 6;
             } else if (difficulty === 'medium') {
@@ -1106,7 +2036,6 @@
                 minLen = 10; maxLen = 99;
             }
 
-            // Filter words by length
             const filtered = wordList.filter(w => {
                 const clean = w.replace(/['-]/g, '');
                 return clean.length >= minLen && clean.length <= maxLen;
@@ -1116,32 +2045,27 @@
             return filtered[Math.floor(Math.random() * filtered.length)];
         }
 
-        function scrambleWord(word) {
+        function scrambleWordLetters(word) {
             const clean = word.replace(/['-]/g, '');
             const letters = clean.split('');
-
-            // Fisher-Yates shuffle
             for (let i = letters.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [letters[i], letters[j]] = [letters[j], letters[i]];
             }
-
             const scrambled = letters.join('');
-            // Ensure it's actually scrambled (not same as original)
             if (scrambled === clean && clean.length > 1) {
-                return scrambleWord(word);
+                return scrambleWordLetters(word);
             }
             return scrambled;
         }
 
-        function startQuiz() {
+        function startScramble() {
             if (!wordList || wordList.length === 0) {
                 alert('Carica prima un dizionario!');
                 return;
             }
 
-            // Reset state
-            quizState = {
+            scrambleState = {
                 active: true,
                 score: 0,
                 streak: 0,
@@ -1152,212 +2076,209 @@
                 hintsUsed: 0,
                 revealedLetters: [],
                 timeLeft: 60,
-                timerEnabled: document.getElementById('chkTimer').checked,
-                difficulty: document.getElementById('selDifficulty').value
+                timerEnabled: document.getElementById('chkScrambleTimer').checked,
+                difficulty: document.getElementById('selScrambleDifficulty').value
             };
 
-            // UI transitions
-            document.getElementById('quizSetup').classList.add('hidden');
-            document.getElementById('quizResults').classList.add('hidden');
-            document.getElementById('quizGame').classList.remove('hidden');
+            document.getElementById('scrambleSetup').classList.add('hidden');
+            document.getElementById('scrambleResults').classList.add('hidden');
+            document.getElementById('scrambleGame').classList.remove('hidden');
+            document.getElementById('scrambleTimerDisplay').classList.toggle('hidden', !scrambleState.timerEnabled);
 
-            // Update timer visibility
-            document.getElementById('timerDisplay').classList.toggle('hidden', !quizState.timerEnabled);
-
-            nextWord();
+            nextScrambleWord();
         }
 
-        function nextWord() {
-            const word = getRandomWord();
+        function nextScrambleWord() {
+            const word = getScrambleWord();
             if (!word) {
-                alert('Nessuna parola disponibile per questa difficoltà!');
-                endQuiz();
+                alert('Nessuna parola disponibile!');
+                endScramble();
                 return;
             }
 
-            quizState.currentWord = word;
-            quizState.scrambled = scrambleWord(word);
-            quizState.hintsUsed = 0;
-            quizState.revealedLetters = [];
+            scrambleState.currentWord = word;
+            scrambleState.scrambled = scrambleWordLetters(word);
+            scrambleState.hintsUsed = 0;
+            scrambleState.revealedLetters = [];
 
-            // Update UI
-            document.getElementById('scrambledWord').textContent = quizState.scrambled.toUpperCase().split('').join(' ');
-            document.getElementById('wordLengthHint').textContent = `${quizState.currentWord.length} lettere`;
-            document.getElementById('quizAnswer').value = '';
-            document.getElementById('quizAnswer').focus();
-            document.getElementById('quizFeedback').classList.add('hidden');
-            document.getElementById('btnHint').disabled = false;
+            document.getElementById('scrambledLetters').textContent = scrambleState.scrambled.toUpperCase().split('').join(' ');
+            document.getElementById('scrambleLengthHint').textContent = `${scrambleState.currentWord.length} lettere`;
+            document.getElementById('scrambleAnswer').value = '';
+            document.getElementById('scrambleAnswer').focus();
+            document.getElementById('scrambleFeedback').classList.add('hidden');
+            document.getElementById('btnScrambleHint').disabled = false;
 
-            updateScoreDisplay();
+            updateScrambleDisplay();
 
-            // Start/reset timer
-            if (quizState.timerEnabled) {
-                clearInterval(quizState.timer);
-                quizState.timeLeft = 60;
-                updateTimerDisplay();
-                quizState.timer = setInterval(() => {
-                    quizState.timeLeft--;
-                    updateTimerDisplay();
-                    if (quizState.timeLeft <= 0) {
-                        clearInterval(quizState.timer);
-                        showFeedback('⏰ Tempo scaduto! Era: ' + quizState.currentWord, 'error');
-                        quizState.wrong++;
-                        quizState.streak = 0;
-                        setTimeout(nextWord, 2000);
+            if (scrambleState.timerEnabled) {
+                clearInterval(scrambleState.timer);
+                scrambleState.timeLeft = 60;
+                updateScrambleTimer();
+                scrambleState.timer = setInterval(() => {
+                    scrambleState.timeLeft--;
+                    updateScrambleTimer();
+                    if (scrambleState.timeLeft <= 0) {
+                        clearInterval(scrambleState.timer);
+                        showScrambleFeedback('⏰ Tempo scaduto! Era: ' + scrambleState.currentWord, 'error');
+                        scrambleState.wrong++;
+                        scrambleState.streak = 0;
+                        setTimeout(nextScrambleWord, 2000);
                     }
                 }, 1000);
             }
         }
 
-        function checkAnswer() {
-            const answer = document.getElementById('quizAnswer').value.trim().toLowerCase();
-            const correct = quizState.currentWord.toLowerCase();
+        function checkScrambleAnswer() {
+            const answer = document.getElementById('scrambleAnswer').value.trim().toLowerCase();
+            const correct = scrambleState.currentWord.toLowerCase();
 
             if (!answer) return;
 
             if (answer === correct) {
-                // Correct answer!
                 const basePoints = 10;
-                const timeBonus = quizState.timerEnabled ? Math.floor(quizState.timeLeft / 10) : 0;
-                const streakBonus = quizState.streak * 2;
-                const hintPenalty = quizState.hintsUsed * 2;
+                const timeBonus = scrambleState.timerEnabled ? Math.floor(scrambleState.timeLeft / 10) : 0;
+                const streakBonus = scrambleState.streak * 2;
+                const hintPenalty = scrambleState.hintsUsed * 2;
                 const points = Math.max(1, basePoints + timeBonus + streakBonus - hintPenalty);
 
-                quizState.score += points;
-                quizState.correct++;
-                quizState.streak++;
-                quizState.maxStreak = Math.max(quizState.maxStreak, quizState.streak);
+                scrambleState.score += points;
+                scrambleState.correct++;
+                scrambleState.streak++;
+                scrambleState.maxStreak = Math.max(scrambleState.maxStreak, scrambleState.streak);
 
-                showFeedback(`✓ Esatto! +${points} punti 🎉`, 'success');
-                clearInterval(quizState.timer);
-                setTimeout(nextWord, 1500);
+                showScrambleFeedback(`✓ Esatto! +${points} punti 🎉`, 'success');
+                clearInterval(scrambleState.timer);
+                setTimeout(nextScrambleWord, 1500);
             } else {
-                // Wrong answer
-                quizState.wrong++;
-                quizState.streak = 0;
-                showFeedback(`✗ Sbagliato! Era: ${quizState.currentWord}`, 'error');
-                clearInterval(quizState.timer);
-                setTimeout(nextWord, 2500);
+                scrambleState.wrong++;
+                scrambleState.streak = 0;
+                showScrambleFeedback(`✗ Sbagliato! Era: ${scrambleState.currentWord}`, 'error');
+                clearInterval(scrambleState.timer);
+                setTimeout(nextScrambleWord, 2500);
             }
 
-            updateScoreDisplay();
+            updateScrambleDisplay();
         }
 
-        function giveHint() {
-            if (quizState.hintsUsed >= 2) {
+        function giveScrambleHint() {
+            if (scrambleState.hintsUsed >= 2) {
                 alert('Massimo 2 aiuti per parola!');
                 return;
             }
 
-            const word = quizState.currentWord.replace(/['-]/g, '');
+            const word = scrambleState.currentWord.replace(/['-]/g, '');
             const unrevealed = [];
 
             for (let i = 0; i < word.length; i++) {
-                if (!quizState.revealedLetters.includes(i)) {
+                if (!scrambleState.revealedLetters.includes(i)) {
                     unrevealed.push(i);
                 }
             }
 
             if (unrevealed.length === 0) return;
 
-            // Reveal a random unrevealed letter
             const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
-            quizState.revealedLetters.push(randomIndex);
-            quizState.hintsUsed++;
+            scrambleState.revealedLetters.push(randomIndex);
+            scrambleState.hintsUsed++;
 
-            // Build hint string
             let hintStr = '';
             for (let i = 0; i < word.length; i++) {
-                if (quizState.revealedLetters.includes(i)) {
+                if (scrambleState.revealedLetters.includes(i)) {
                     hintStr += word[i].toUpperCase() + ' ';
                 } else {
                     hintStr += '_ ';
                 }
             }
 
-            document.getElementById('scrambledWord').textContent = hintStr.trim();
+            document.getElementById('scrambledLetters').textContent = hintStr.trim();
 
-            if (quizState.hintsUsed >= 2) {
-                document.getElementById('btnHint').disabled = true;
+            if (scrambleState.hintsUsed >= 2) {
+                document.getElementById('btnScrambleHint').disabled = true;
             }
 
-            showFeedback(`💡 Lettera rivelata! (-2 punti)`, 'warning');
+            showScrambleFeedback(`💡 Lettera rivelata! (-2 punti)`, 'warning');
         }
 
-        function skipWord() {
-            quizState.skipped++;
-            quizState.streak = 0;
-            showFeedback(`⏭️ Saltata! Era: ${quizState.currentWord}`, 'warning');
-            clearInterval(quizState.timer);
-            setTimeout(nextWord, 2000);
+        function skipScrambleWord() {
+            scrambleState.skipped++;
+            scrambleState.streak = 0;
+            showScrambleFeedback(`⏭️ Saltata! Era: ${scrambleState.currentWord}`, 'warning');
+            clearInterval(scrambleState.timer);
+            setTimeout(nextScrambleWord, 2000);
         }
 
-        function endQuiz() {
-            clearInterval(quizState.timer);
-            quizState.active = false;
+        function endScramble() {
+            clearInterval(scrambleState.timer);
+            scrambleState.active = false;
 
-            // Update stats
-            const gamesPlayed = parseInt(localStorage.getItem('quizGamesPlayed') || 0) + 1;
-            localStorage.setItem('quizGamesPlayed', gamesPlayed);
+            const gamesPlayed = parseInt(localStorage.getItem('scrambleGamesPlayed') || 0) + 1;
+            localStorage.setItem('scrambleGamesPlayed', gamesPlayed);
 
-            const bestScore = parseInt(localStorage.getItem('quizBestScore') || 0);
-            const isNewRecord = quizState.score > bestScore;
+            const bestScore = parseInt(localStorage.getItem('scrambleBestScore') || 0);
+            const isNewRecord = scrambleState.score > bestScore;
 
             if (isNewRecord) {
-                localStorage.setItem('quizBestScore', quizState.score);
+                localStorage.setItem('scrambleBestScore', scrambleState.score);
             }
 
-            // Show results
-            document.getElementById('quizGame').classList.add('hidden');
-            document.getElementById('quizResults').classList.remove('hidden');
+            document.getElementById('scrambleGame').classList.add('hidden');
+            document.getElementById('scrambleResults').classList.remove('hidden');
 
-            document.getElementById('finalScore').textContent = quizState.score;
-            document.getElementById('correctAnswers').textContent = quizState.correct;
-            document.getElementById('wrongAnswers').textContent = quizState.wrong;
-            document.getElementById('skippedWords').textContent = quizState.skipped;
-            document.getElementById('maxStreakResult').textContent = quizState.maxStreak;
+            document.getElementById('scrambleFinalScore').textContent = scrambleState.score;
+            document.getElementById('scrambleCorrect').textContent = scrambleState.correct;
+            document.getElementById('scrambleWrong').textContent = scrambleState.wrong;
+            document.getElementById('scrambleSkipped').textContent = scrambleState.skipped;
+            document.getElementById('scrambleMaxStreak').textContent = scrambleState.maxStreak;
 
-            document.getElementById('newRecord').classList.toggle('hidden', !isNewRecord);
+            document.getElementById('scrambleNewRecord').classList.toggle('hidden', !isNewRecord);
 
-            loadQuizStats();
+            loadScrambleStats();
         }
 
-        function backToQuizSetup() {
-            document.getElementById('quizResults').classList.add('hidden');
-            document.getElementById('quizSetup').classList.remove('hidden');
+        function backToScrambleSetup() {
+            document.getElementById('scrambleResults').classList.add('hidden');
+            document.getElementById('scrambleSetup').classList.remove('hidden');
         }
 
-        function updateScoreDisplay() {
-            document.getElementById('currentScore').textContent = quizState.score;
-            document.getElementById('currentStreak').textContent = quizState.streak;
+        function updateScrambleDisplay() {
+            document.getElementById('scrambleScore').textContent = scrambleState.score;
+            document.getElementById('scrambleStreak').textContent = scrambleState.streak;
         }
 
-        function updateTimerDisplay() {
-            const el = document.getElementById('timeLeft');
-            el.textContent = quizState.timeLeft;
+        function updateScrambleTimer() {
+            const el = document.getElementById('scrambleTimeLeft');
+            el.textContent = scrambleState.timeLeft;
 
-            // Color warning
-            if (quizState.timeLeft <= 10) {
+            if (scrambleState.timeLeft <= 10) {
                 el.style.color = '#e74c3c';
-            } else if (quizState.timeLeft <= 30) {
+            } else if (scrambleState.timeLeft <= 30) {
                 el.style.color = '#f39c12';
             } else {
                 el.style.color = '#27ae60';
             }
         }
 
-        function showFeedback(message, type) {
-            const el = document.getElementById('quizFeedback');
+        function showScrambleFeedback(message, type) {
+            const el = document.getElementById('scrambleFeedback');
             el.textContent = message;
             el.className = '';
             el.classList.add('info-message', type);
             el.classList.remove('hidden');
         }
 
-        function handleQuizKeyUp(e) {
+        function handleScrambleKeyUp(e) {
             if (e.key === 'Enter') {
-                checkAnswer();
+                checkScrambleAnswer();
             }
+        }
+
+        // Service Worker per PWA - attivo solo su GitHub Pages
+        if ('serviceWorker' in navigator && location.hostname.includes('github.io')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registrato:', reg.scope))
+                    .catch(err => console.log('SW fallito:', err));
+            });
         }
     </script>
 </body>
